@@ -1,0 +1,13 @@
+//***simple import
+//***	list files in hdfs: 		hdfs dfs -ls /user/matymar7
+//*** 	show files to hdfs:			hdfs dfs -tail /user/matymar7/file1
+//*** 	show files to hdfs:			hdfs dfs -head /user/matymar7/file1
+//*** 	show files to hdfs:			hdfs dfs -cat /user/matymar7/file1
+//***	remove retail_db from hdfs: hdfs dfs -rm -r /user/matymar7/sqoop_import/retail_db
+//***	remove file1 from hdfs:		hdfs dfs -rm /user/matymar7/file1
+//*** 	create directory:			hdfs dfs -mkdir /user/matymar7/newdir
+//*** 	get files from hdfs:		hdfs dfs -get /user/matymar7/file1 file1
+//*** 	get dir from hdfs:			hdfs dfs -copyToLocal /user/matymar7/file1 file1
+//*** 	put files to hdfs:			hdfs dfs -put /user/matymar7/file1
+//*** 	put dir to hdfs:			hdfs dfs -copyFromLocal /user/matymar7/file1 file1
+

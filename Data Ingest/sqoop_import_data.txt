@@ -1,0 +1,42 @@
+/***** simple import
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table order_items \
+--warehouse-dir "/user/matymar7/sqoop_import/retail_db"
+
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table order_items \
+--warehouse-dir "/user/matymar7/sqoop_import/retail_db" \
+--num-mappers 1
+
+
+/***** managing directories
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table order_items \
+--warehouse-dir /user/matymar7/sqoop_import/retail_db \
+--num-mappers 1 \
+--delete-target-dir
+
+hdfs dfs -ls /user/matymar7/sqoop_import/retail_db/order_items
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table order_items \
+--warehouse-dir /user/matymar7/sqoop_import/retail_db \
+--num-mappers 1 \
+--append

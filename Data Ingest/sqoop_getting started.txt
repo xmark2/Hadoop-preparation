@@ -1,0 +1,50 @@
+sqoop version
+///***Sqoop 1.4.6.2.6.5.0-292
+
+mysql -u retail_user -h ms.itversity.com -p
+
+	password: itversity
+
+show databases;
+use retail_db;
+show tables;
+select * from orders limit 10;
+exit;
+
+
+sqoop help
+
+sqoop list-databases \
+--connect jdbc:mysql://ms.itversity.com:3306 \
+--username retail_user \
+--password itversity
+
+sqoop list-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity
+
+sqoop eval \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--query "INSERT INTO orders VALUES (100000, '2017-10-31 00:00:00.0', 100000, 'DUMMY')"
+
+sqoop eval \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--query "CREATE TABLE dummy (i INT)"
+
+sqoop eval \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--query "INSERT INTO dummy VALUES (1)"
+
+sqoop eval \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--query "SELECT * FROM order_items LIMIT 10"
+
