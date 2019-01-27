@@ -40,3 +40,50 @@ sqoop import \
 --warehouse-dir /user/matymar7/sqoop_import/retail_db \
 --num-mappers 1 \
 --append
+
+/***** using split by
+
+/***mysql preparation
+mysql -u retail_user -h ms.itversity.com -p
+use retail_export;
+select TABLE_NAME FROM INFORMATION_SCHEMA.tables where TABLE_NAME LIKE 't0117x%' order by TABLE_NAME limit 10;
+//** create my personal copy for experiments
+create table t0117x_orders as select * from orders;
+create table t0117x_order_items_nopk as select * from order_items;
+exit;
+select 
+
+//**split numeric field
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_order_items_nopk \
+--warehouse-dir /user/matymar7/sqoop_import/retail_db \
+--split-by order_item_order_id
+
+
+//**split non-numeric field
+
+sqoop import \
+-Dorg.apache.sqoop.splitter.allow_text_splitter=true \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_orders \
+--warehouse-dir /user/matymar7/sqoop_import/retail_db \
+--split-by order_status
+
+//check on hdsf
+hdfs dfs -ls /user/matymar7/sqoop_import/retail_db/t0117x_orders
+
+/***** auto-reset-to-one-mapper
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_order_items_nopk \
+--warehouse-dir /user/matymar7/sqoop_import/retail_db/auto \
+--autoreset-to-one-mapper

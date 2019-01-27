@@ -9,6 +9,12 @@ show databases;
 use retail_db;
 show tables;
 select * from orders limit 10;
+
+use retail_export;
+select TABLE_NAME FROM INFORMATION_SCHEMA.tables where TABLE_NAME LIKE 't0117x%' order by TABLE_NAME limit 10;
+//** create my personal copy for experiments
+create table t0117x_orders as select * from orders;
+create table t0117x_order_items_nopk as select * from order_items;
 exit;
 
 
