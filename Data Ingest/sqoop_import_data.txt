@@ -197,3 +197,124 @@ sqoop import \
 --num-mappers 2 \
 --query "select o.*, sum(oi.order_item_subtotal) from orders o join order_items oi on o.order_id=oi.order_item_id and \$CONDITIONS group by o.order_id, o.order_date, o.order_customer_id, o.order_status" \
 --split-by order_id
+
+
+//*** delimiters, and handling nulls
+
+mysql -u hr_user -h ms.itversity.com -p
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/hr_db \
+--username hr_user \
+--password itversity \
+--table employees \
+--warehouse-dir /user/matymar7/sqoop_import/hr_db \
+--null-non-string -1 \
+--fields-terminated-by "\t" \
+--lines-terminated-by ":"
+
+
+ascii
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/hr_db \
+--username hr_user \
+--password itversity \
+--table employees \
+--warehouse-dir /user/matymar7/sqoop_import/hr_db \
+--null-non-string -1 \
+--fields-terminated-by "\000" \
+--lines-terminated-by ":"
+
+
+rm -rf employees
+hdfs dfs -get /user/matymar7/sqoop_import/hr_db/employees
+cd employees
+view part-m-00000
+
+
+
+//*** incremental loads
+
+manual way to use where and append
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--target-dir /user/matymar7/sqoop_import/retail_db/orders \
+--num-mappers 2 \
+--query "select * from orders where \$CONDITIONS and order_date like '2013-%'" \
+--split-by order_id
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--target-dir /user/matymar7/sqoop_import/retail_db/orders \
+--num-mappers 2 \
+--query "select * from orders where \$CONDITIONS and order_date like '2014-%'" \
+--split-by order_id \
+--append
+
+
+better way to use incremental
+
+hdfs dfs -rm -r /user/matymar7/sqoop_import/retail_db/*
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--target-dir /user/matymar7/sqoop_import/retail_db/orders \
+--num-mappers 2 \
+--table orders \
+--check-column order_date \
+--incremental append \
+--last-value "2014-02-28"
+
+
+
+
+//*** hive import
+
+
+hive
+create database matymar7_sqoop_import
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table order_items \
+--hive-import \
+--hive-database matymar7_sqoop_import \
+--hive-table order_items \
+--num-mappers 2
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table orders \
+--hive-import \
+--hive-database matymar7_sqoop_import \
+--hive-table orders \
+--hive-overwrite \
+--num-mappers 2
+
+//*** import-all-tables
+
+hdfs dfs -rm -r /user/matymar7/sqoop_import/retail_db/*
+
+sqoop import-all-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--warehouse-dir /user/matymar7/sqoop_import/retail_db \
+--autoreset-to-one-mapper
+
+hdfs dfs -ls /user/matymar7/sqoop_import/retail_db
