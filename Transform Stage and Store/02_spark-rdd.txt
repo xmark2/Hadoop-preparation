@@ -1,0 +1,25 @@
+/**create RDD
+
+spark-shell --master yarn \
+	--conf spark.ui.port=12654 \
+	--num-executors 1 \
+	--executor-memory 512M
+sc.getConf.getAll.foreach(println)
+
+
+val orders = sc.textFile("/public/retail_db/orders")
+orders.first
+orders.take(10)
+
+val productsRaw = scala.io.Source.fromFile("/data/retail_db/products/part-00000").getLines.toList
+
+val productsRDD = sc.parallelize(productsRaw)
+
+productsRDD.take(10)
+
+orders.count
+
+orders.takeSample(true,100)
+orders.takeSample(true,100).foreach(println)
+
+orders.collect
