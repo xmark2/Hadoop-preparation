@@ -1,0 +1,128 @@
+/***** simple export
+
+
+/*preparation let's export data from hive to mysql
+mysql -u retail_user -h ms.itversity.com -p
+show databases;
+use retail_export;
+create table t0117x_daily_revenue (order_date varchar(30), revenue float);
+
+hive 
+use matymar7_sqoop_import;
+create table daily_revenue as select order_date, sum(order_item_subtotal) daily_revenue from orders o join order_items oi on oi.order_item_order_id=o.order_id where order_date like '2013-07%' group by order_date;
+describe formatted daily_revenue;
+
+/**describe formatted shows where the hive stores the data 
+
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_daily_revenue \
+--export-dir /apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue \
+--input-fields-terminated-by "\001"
+
+
+//*** column mapping
+
+
+mysql -u retail_user -h ms.itversity.com -p
+show databases;
+use retail_export;
+create table t0117x_daily_revenue_demo as select *, NULL description from t0117x_daily_revenue;
+alter table t0117x_daily_revenue_demo modify description varchar(200);
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_daily_revenue_demo \
+--columns order_date,revenue \
+--export-dir /apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue \
+--input-fields-terminated-by "\001" \
+--num-mappers 2
+
+/*without -columns the export failing, because an extra field added for mapping task
+
+
+//*** update and upsert
+
+mysql -u retail_user -h ms.itversity.com -p
+show databases;
+use retail_export;
+create table t0117x_daily_revenue_update (order_date varchar(30) primary key, revenue float);
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_daily_revenue_update \
+--export-dir /apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue \
+--input-fields-terminated-by "\001" \
+--num-mappers 1
+
+/*the prev code failed for 2nd run because of PK
+hive
+use matymar7_sqoop_import;
+insert into daily_revenue select order_date, sum(order_item_subtotal) daily_revenue from orders o join order_items oi on oi.order_item_order_id=o.order_id where order_date like '2013-08%' group by order_date;
+
+mysql -u retail_user -h ms.itversity.com -p
+use retail_export;
+update t0117x_daily_revenue_update set revenue=0;
+
+/*update-key added to the sqoop code
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_daily_revenue_update \
+--update-key order_date \
+--export-dir /apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue \
+--input-fields-terminated-by "\001" \
+--num-mappers 1
+
+/*update-mode allowinsert added to the sqoop code
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_daily_revenue_update \
+--update-key order_date \
+--update-mode allowinsert \
+--export-dir /apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue \
+--input-fields-terminated-by "\001" \
+--num-mappers 1
+
+
+
+
+//*** staging tables
+
+
+/*preparation let's export data from hive to mysql staging then mysql table
+
+hive 
+use matymar7_sqoop_import;
+truncate table daily_revenue;
+insert into daily_revenue select order_date, sum(order_item_subtotal) daily_revenue from orders o join order_items oi on oi.order_item_order_id=o.order_id group by order_date;
+describe formatted daily_revenue;
+
+mysql -u retail_user -h ms.itversity.com -p
+show databases;
+use retail_export;
+truncate table t0117x_daily_revenue;
+create table t0117x_daily_revenue_stage (order_date varchar(30), revenue float);
+
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_daily_revenue \
+--staging-table t0117x_daily_revenue_stage \
+--clear-staging-table \
+--export-dir /apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue \
+--input-fields-terminated-by "\001"
