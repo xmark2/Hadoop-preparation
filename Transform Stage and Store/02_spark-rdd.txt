@@ -143,6 +143,7 @@ ordersFiltered.count
 
 
 
+
 /*** **  joins
 
 
@@ -202,3 +203,98 @@ val ordersWithNoOrderItem = ordersRightOuterJoin.
  filter(order=>order._2._1==None).
  map(order=>order._2._2)
 ordersWithNoOrderItem.take(10).foreach(println)
+
+
+
+
+
+
+/*****aggregations
+
+/*countByKey, reduce, groupByKey
+
+val orders=sc.textFile("/public/retail_db/orders")
+
+orders.map(order=>(order.split(",")(3),"")).countByKey.foreach(println)
+
+val orderItems=sc.textFile("/public/retail_db/order_items/")
+orderItems.take(10).foreach(println)
+
+val orderItemsRevenue = orderItems.map(oi=> oi.split(",")(4).toFloat)
+orderItemsRevenue.take(10).foreach(println)
+orderItemsRevenue.reduce((total, revenue) => total+revenue)
+
+val orderItemsMaxRevenue=orderItemsRevenue.reduce((max,revenue) => {
+ if(max<revenue) revenue else max
+})
+
+val orderItemsMap = orderItems.map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
+orderItemsMap .take(10).foreach(println)  
+
+val orderItemsGBK=orderItemsMap.groupByKey
+orderItemsGBK.take(10).foreach(println)    
+
+orderItemsGBK.map(rec=>rec._2.toList.sum).take(10).foreach(println)
+
+orderItemsGBK.map(rec=>(rec._1, rec._2.toList.sum)).take(10).foreach(println)  
+
+/** sorting
+
+val l = Iterable(343,5,6343,7,1).toList
+
+l.sorted
+l.sortBy(o=>-o)
+
+val ordersSortedByRevenue = orderItemsGBK.
+ flatMap(rec=>{
+ rec._2.toList.sortBy(o=>-o).map(k=>(rec._l,k))
+})
+
+ordersSortedByRevenue.take(10).foreach(println)  
+
+
+/* reduceByKey
+
+val orderItems=sc.textFile("/public/retail_db/order_items/") 
+val orderItemsMap = orderItems.map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
+
+val revenuePerOrderId=orderItemsMap.
+ reduceByKey((total, revenue)=>total+revenue)
+
+val minRevenuePerOrderId=orderItemsMap.
+ reduceByKey((min, revenue)=>if(min>revenue) revenue else min)
+
+revenuePerOrderId.take(10).foreach(println)
+minRevenuePerOrderId.take(10).foreach(println)
+
+orderItemsMap.sortByKey().take(10).foreach(println)
+
+minRevenuePerOrderId.sortByKey().take(10).foreach(println)
+
+
+/* aggregateByKey
+
+val orderItems=sc.textFile("/public/retail_db/order_items/") 
+val orderItemsMap = orderItems.map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
+
+val revenueAndMaxPerProductID=orderItemsMap.
+ aggregateByKey((0.0, 0.0))(
+ (inter, subtotal)=>(inter._1+subtotal, if(subtotal>inter._2) subtotal else inter._2),
+ (total, inter)=>(total._1+inter._1, if(total._2>inter._2) total._2 else inter._2)
+)
+revenueAndMaxPerProductID.take(10).foreach(println)
+
+revenueAndMaxPerProductID.sortByKey().take(10).foreach(println)
+
+//(order_id, order_item_subtotal)
+val revenueAndMaxPerProductID=orderItemsMap.
+ aggregateByKey((0.0f, 0.0f))(
+ (inter, subtotal)=>(inter._1+subtotal, if(subtotal>inter._2) subtotal else inter._2),
+ (total, inter)=>(total._1+inter._1, if(total._2>inter._2) total._2 else inter._2)
+)
+//(order_id, (order_revenue, max_order_item_subtotal))
+
+
+
+
+
