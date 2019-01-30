@@ -41,6 +41,8 @@ ordersDF.show
 
 
 
+
+
 /*****transform stage and store
 
 val orders=sc.textFile("/public/retail_db/orders")
@@ -109,6 +111,10 @@ l_flatMap.collect.foreach(println)
 val wordcount = l_flatMap.map(word => (word, "")).countByKey
 
 
+
+
+
+
 /*** filters
 
 val orders=sc.textFile("/public/retail_db/orders")
@@ -140,6 +146,10 @@ val ordersFiltered = orders.filter(order => {
 
 ordersFiltered.take(10).foreach(println)
 ordersFiltered.count
+
+
+
+
 
 
 
@@ -297,4 +307,136 @@ val revenueAndMaxPerProductID=orderItemsMap.
 
 
 
+
+/*****sorting
+
+val products=sc.textFile("/public/retail_db/products/")
+products.take(10).foreach(println)
+
+val productsMap=products.map(product=>(product.split(",")(1).toInt,product))
+
+productsMap.take(10).foreach(println)
+
+val productsSortedByCategoryId = productsMap.sortByKey()
+
+productsSortedByCategoryId.take(10).foreach(println)
+
+/*desc order
+val productsSortedByCategoryId = productsMap.sortByKey(false)
+productsSortedByCategoryId.take(10).foreach(println)
+
+val productsMap = products.
+ filter(product=>product.split(",")(4)!="").
+ map(product=>((product.split(",")(1).toInt,-product.split(",")(4).toFloat),product))
+
+val productsSortedByCategoryId=productsMap.sortByKey()
+productsSortedByCategoryId.take(10).foreach(println)
+
+
+val productsSortedByCategoryId=productsMap.sortByKey().map(rec=>rec._2)
+productsSortedByCategoryId.take(10).foreach(println)
+
+
+
+
+/*****ranking
+
+val products=sc.textFile("/public/retail_db/products")
+val productsMap=products.
+ filter(product=>product.split(",")(4)!="").
+ map(product=>(product.split(",")(4).toFloat,product))
+val productsSortedByPrice=productsMap.sortedByKey(false)
+productsSortedByPrice.take(10).foreach(println)
+
+
+products.
+ filter(product=>product.split(",")(4)!="").
+ takeOrdered(10)(Ordering[Float].reverse.on(product=>product.split(",")(4).toFloat)).
+ foreach(println)
+
+
+/**byKeyRanking
+
+//ranking -Get top N priced products with in each product category
+
+val products=sc.textFile("/public/retail_db/products")
+val productsMap=products.
+ filter(product=>product.split(",")(4)!="").
+ map(product=>(product.split(",")(1).toFloat,product))
+
+productsMap.take(10).foreach(println)
+
+val productsGroupByCategory = productsMap.groupByKey
+
+products.count
+
+productsMap.count
+
+productsGroupByCategory.count
+
+productsGroupByCategory.take(10).foreach(println)
+
+
+
+/**get top N prices using scala
+
+products.first
+productsGroupByCategory.first
+
+val productsIterable = productsGroupByCategory.first._2
+
+productsIterable.take(10).foreach(println)
+
+productsIterable.map(p=>p.split(",")(4).toFloat)
+productsIterable.map(p=>p.split(",")(4).toFloat).toSet
+
+val productPrices = productsIterable.map(p=>p.split(",")(4).toFloat).toSet
+
+productPrices.toList
+productPrices.toList.sortBy
+productPrices.toList.sortBy(p=>-p)
+productPrices.toList.sortBy(p=>-p).take(5)
+
+
+
+
+/**get top N priced products using scala
+
+
+//get all the products in desc order by price
+val productsSorted = productsIterable.toList.sortBy(product=>-product.split(",")(4).toFloat)
+productsSorted.foreach(println)
+
+
+val minOfTopNPrices = topNPrices.min
+
+val topNPricedProducts = productsSorted.takeWhile(product=>product.split(",")(4).toFloat >= minOfTopNPrices)
+topNPricedProducts.foreach(println)
+
+
+def getTopNPricedProducts(productsIterable: Iterable[String], topN: Int): Iterable[String] = {
+	val productPrices = productsIterable.map(p=>p.split(",")(4).toFloat).toSet
+	val topNPrices = productPrices.toList.sortBy(p=>-p).take(topN)
+
+	val productsSorted = productsIterable.toList.sortBy(product=>-product.split(",")(4).toFloat)
+	val minOfTopNPrices = topNPrices.min
+
+	val topNPricedProducts = productsSorted.takeWhile(product=>product.split(",")(4).toFloat >= minOfTopNPrices)
+	topNPricedProducts
+}
+
+getTopNPricedProducts(productsIterable, 5)
+getTopNPricedProducts(productsIterable, 5).foreach(println)
+getTopNPricedProducts(productsIterable, 3).foreach(println)
+
+
+
+
+/**get top N products by category
+
+
+productsGroupByCategory.take(10).foreach(println)
+
+val top3PricedProductsPerCategory = productsGroupByCategory.flatMap(rec=>getTopNPricedProducts(rec._2,3))
+top3PricedProductsPerCategory.collect.foreach(println)
 
