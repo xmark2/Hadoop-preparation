@@ -440,3 +440,134 @@ productsGroupByCategory.take(10).foreach(println)
 val top3PricedProductsPerCategory = productsGroupByCategory.flatMap(rec=>getTopNPricedProducts(rec._2,3))
 top3PricedProductsPerCategory.collect.foreach(println)
 
+
+
+
+
+/*****set operations
+
+val orders=sc.textFile("/public/retail_db/orders")
+
+orders.first
+val customers_201308=orders.
+ filter(order=>order.split(",")(1).contains("2013-08")).
+ map(order=>order.split(",")(2).toInt)
+
+customers_201308.count
+customers_201308.distinct.count
+
+val customers_201309=orders.
+ filter(order=>order.split(",")(1).contains("2013-09")).
+ map(order=>order.split(",")(2).toInt)
+
+customers_201309.distinct.count  
+
+//get all the customers who placed orders in 2013 Aug and 2013 Sept
+
+customers_201308_and_201309.distinct.count
+
+//get all the unique customers who placed orders in 2013 Aug and 2013 Sept
+
+val customers_201308_union_201309 = customers_201308.union(customers_201309)
+customers_201308_union_201309.count
+customers_201308_union_201309.distinct.count  
+
+val customers_201308_union_201309 = customers_201308.union(customers_201309).distinct
+
+//get all the customers who placed orders in 2013 Aug but not in 2013 Sept    
+
+customers_201308.map(c=>(c,l)).
+ leftOuterJoin(customers_201309.map(c=>(c,l))).
+ take(100).
+ foreach(println)
+
+
+
+customer_201308_minus_201309..distinct.count
+
+ customer_201308_minus_201309.distinct.take(10).foreach(println)
+
+//get all the customers who placed orders in 2013 Aug but not in 2013 Sept  
+val customer_201308_minus_201309 = customers_201308.map(c=>(c,l)).
+ leftOuterJoin(customers_201309.map(c=>(c,l))).
+ filter(rec=>rec._2._2 == None).
+ map(rec=>rec._1).
+ distinct
+
+
+/*****saving data with delimiters
+
+val orders=sc.textFile("/public/retail_db/orders")
+
+val orderCountByStatus = orders.
+ map(order=>(order.split(",")(3),1)).
+ reduceByKey((total, element)=>total+element)
+
+orderCountByStatus.saveAsTextFile
+
+orderCountByStatus.saveAsTextFile("/user/matymar7/order_count_by_status")
+
+sc..saveAsTextFile("/user/matymar7/order_count_by_status").collect.foreach(println)
+
+orderCountByStatus.
+ map(rec=>rec._1+"\t"+rec._2).
+ saveAsTextFile("/user/matymar7/order_count_by_status")
+
+//let's delete the data if we have anything in target folder
+
+hdfs dfs -rm -r /user/matymar7/order_count_by_status
+
+
+orderCountByStatus.
+ map(rec=>rec._1+"\t"+rec._2).
+ saveAsTextFile("/user/matymar7/order_count_by_status")
+
+sc.saveAsTextFile("/user/matymar7/order_count_by_status").collect.foreach(println) 
+
+//let's check the file in hdfs
+hdfs dfs -ls /user/matymar7/order_count_by_status/part*
+
+
+/***compression
+
+cd /etc/hadoop.conf
+vi core-site.xml
+/codec
+
+copy org.apache.hadoop.io.compress.SnappyCodec from conf file
+
+hdfs dfs -ls /user/matymar7/order_count_by_status_snappy
+
+sc.textFile(""/user/matymar7/order_count_by_status_snappy").collect.foreach(println)
+
+//using compression
+orderCountByStatus.
+saveAsTextFile("/user/matymar7/ order_count_by_status_snappy ",
+classOf[org.apache.hadoop.io.compress.SnappyCodec])
+
+hdfs dfs -ls /user/matymar7/order_count_by_status_snappy
+
+ sc.textFile("/user/matymar7/order_count_by_status_snappy").collect.foreach(println)
+
+
+/*****save data in different file formats
+
+val ordersDF=sqlContext.read.json("/public/retail_db_json/orders")
+
+ordersDF.save("/user/matymar7/orders_parquet", "parquet")
+
+sqlContext.load 
+
+sqlContext.load("/user/matymar7/orders_parquet", "parquet").show
+
+//writing data into different file formats
+
+var ordersDF = sqlContext.read.json("/public/retail_db_json/orders")
+ordersDF.save("/user/matymar7/orders_parquet", "parquet")
+ordersDF.write.orc("/user/matymar7/orders_orc")
+
+sqlContext.load("/user/matymar7/orders_orc","orc")
+sqlContext.load("/user/matymar7/orders_orc","orc") .show
+
+sqlContext.read.orc("/user/matymar7/orders_orc").show 
+ 
