@@ -1,4 +1,4 @@
-/**create RDD
+/**create RDD***/
 
 spark-shell --master yarn \
 	--conf spark.ui.port=12654 \
@@ -26,7 +26,7 @@ orders.collect
 
 
 
-/*scenarioA to read json
+/*scenarioA to read json***/
 
 val ordersDF=sqlContext.read.json("/public/retail_db_json/orders")
 ordersDF.show
@@ -34,7 +34,7 @@ ordersDF.schema
 ordersDF.select("order_id","order_date")
 ordersDF.select("order_id","order_date").show
 
-/*scenarioB to read json
+/*scenarioB to read json*/
 val ordersDF=sqlContext.load("/public/retail_db/orders","json")
 ordersDF.show
 
@@ -43,7 +43,7 @@ ordersDF.show
 
 
 
-/*****transform stage and store
+/*****transform stage and store***/
 
 val orders=sc.textFile("/public/retail_db/orders")
 val str = orders.first
@@ -71,7 +71,7 @@ orderDate.replace("07","July")
 orderDate.indexOf("2")
 orderDate.indexOf("2", 2)
 
-/*** map
+/*** map ***/
 
 val orders=sc.textFile("/public/retail_db/orders")
 val orderDates = orders.map((str: String) => {
@@ -97,7 +97,7 @@ orderItems.take(10).foreach(println)
 
 
 
-/*** flatmap
+/*** flatmap ***/
 
 val l = List("hello","How are you doing","Let us perform word count","As part of the word count program","we will see how many times each word repeat")
 
@@ -115,7 +115,7 @@ val wordcount = l_flatMap.map(word => (word, "")).countByKey
 
 
 
-/*** filters
+/*** filters ***/
 
 val orders=sc.textFile("/public/retail_db/orders")
 
@@ -154,10 +154,10 @@ ordersFiltered.count
 
 
 
-/*** **  joins
+/*** **  joins ***/
 
 
-/*** inner join
+/*** inner join ***/
 
 val orders=sc.textFile("/public/retail_db/orders")
 val orderitems=sc.textFile("/public/retail_db/order_items")
@@ -185,7 +185,7 @@ ordersJoin.count
 
 
 
-/*** outer join
+/*** outer join ***/
 
 val ordersMap=orders.map(order=> {
  (order.split(",")(0).toInt,order)
@@ -197,7 +197,7 @@ val orderItemsMap=orderItems.map(orderItem=> {
 })
 
 val ordersLeftOuterJoin = ordersMap.leftOuterJoin(orderItemsMap)
-val ordersRightOuterJoin = orderItemsMap.leftOuterJoin(ordersMap)
+
 
 val t = ordersLeftOuterJoin.first
 t._2._2
@@ -209,6 +209,7 @@ val ordersWithNoOrderItem = ordersLeftOuterJoinFilter.map(order=>order._2._1)
 ordersWithNoOrderItem.take(10).foreach(println)
 
 
+val ordersRightOuterJoin = orderItemsMap.rightOuterJoin(ordersMap)
 val ordersWithNoOrderItem = ordersRightOuterJoin.
  filter(order=>order._2._1==None).
  map(order=>order._2._2)
@@ -219,9 +220,9 @@ ordersWithNoOrderItem.take(10).foreach(println)
 
 
 
-/*****aggregations
+/*****aggregations ***/
 
-/*countByKey, reduce, groupByKey
+/*countByKey, reduce, groupByKey */
 
 val orders=sc.textFile("/public/retail_db/orders")
 
@@ -248,7 +249,7 @@ orderItemsGBK.map(rec=>rec._2.toList.sum).take(10).foreach(println)
 
 orderItemsGBK.map(rec=>(rec._1, rec._2.toList.sum)).take(10).foreach(println)  
 
-/** sorting
+/** sorting */
 
 val l = Iterable(343,5,6343,7,1).toList
 
@@ -263,7 +264,7 @@ val ordersSortedByRevenue = orderItemsGBK.
 ordersSortedByRevenue.take(10).foreach(println)  
 
 
-/* reduceByKey
+/* reduceByKey */
 
 val orderItems=sc.textFile("/public/retail_db/order_items/") 
 val orderItemsMap = orderItems.map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
@@ -282,7 +283,7 @@ orderItemsMap.sortByKey().take(10).foreach(println)
 minRevenuePerOrderId.sortByKey().take(10).foreach(println)
 
 
-/* aggregateByKey
+/* aggregateByKey */
 
 val orderItems=sc.textFile("/public/retail_db/order_items/") 
 val orderItemsMap = orderItems.map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
@@ -308,7 +309,7 @@ val revenueAndMaxPerProductID=orderItemsMap.
 
 
 
-/*****sorting
+/*****sorting ***/
 
 val products=sc.textFile("/public/retail_db/products/")
 products.take(10).foreach(println)
@@ -321,7 +322,7 @@ val productsSortedByCategoryId = productsMap.sortByKey()
 
 productsSortedByCategoryId.take(10).foreach(println)
 
-/*desc order
+/*desc order */
 val productsSortedByCategoryId = productsMap.sortByKey(false)
 productsSortedByCategoryId.take(10).foreach(println)
 
@@ -339,7 +340,7 @@ productsSortedByCategoryId.take(10).foreach(println)
 
 
 
-/*****ranking
+/*****ranking ***/
 
 val products=sc.textFile("/public/retail_db/products")
 val productsMap=products.
@@ -355,7 +356,7 @@ products.
  foreach(println)
 
 
-/**byKeyRanking
+/**byKeyRanking ***/
 
 //ranking -Get top N priced products with in each product category
 
@@ -378,7 +379,7 @@ productsGroupByCategory.take(10).foreach(println)
 
 
 
-/**get top N prices using scala
+/**get top N prices using scala ***/
 
 products.first
 productsGroupByCategory.first
@@ -400,7 +401,7 @@ productPrices.toList.sortBy(p=>-p).take(5)
 
 
 
-/**get top N priced products using scala
+/**get top N priced products using scala ***/
 
 
 //get all the products in desc order by price
@@ -432,7 +433,7 @@ getTopNPricedProducts(productsIterable, 3).foreach(println)
 
 
 
-/**get top N products by category
+/**get top N products by category ***/
 
 
 productsGroupByCategory.take(10).foreach(println)
@@ -444,7 +445,7 @@ top3PricedProductsPerCategory.collect.foreach(println)
 
 
 
-/*****set operations
+/*****set operations ***/
 
 val orders=sc.textFile("/public/retail_db/orders")
 
@@ -495,7 +496,7 @@ val customer_201308_minus_201309 = customers_201308.map(c=>(c,l)).
  distinct
 
 
-/*****saving data with delimiters
+/*****saving data with delimiters ***/
 
 val orders=sc.textFile("/public/retail_db/orders")
 
@@ -513,7 +514,7 @@ orderCountByStatus.
  map(rec=>rec._1+"\t"+rec._2).
  saveAsTextFile("/user/matymar7/order_count_by_status")
 
-//let's delete the data if we have anything in target folder
+//let's delete the data if we have anything in target folder '
 
 hdfs dfs -rm -r /user/matymar7/order_count_by_status
 
@@ -528,7 +529,7 @@ sc.saveAsTextFile("/user/matymar7/order_count_by_status").collect.foreach(printl
 hdfs dfs -ls /user/matymar7/order_count_by_status/part*
 
 
-/***compression
+/***compression ***/
 
 cd /etc/hadoop.conf
 vi core-site.xml
@@ -538,7 +539,7 @@ copy org.apache.hadoop.io.compress.SnappyCodec from conf file
 
 hdfs dfs -ls /user/matymar7/order_count_by_status_snappy
 
-sc.textFile(""/user/matymar7/order_count_by_status_snappy").collect.foreach(println)
+sc.textFile("/user/matymar7/order_count_by_status_snappy").collect.foreach(println)
 
 //using compression
 orderCountByStatus.
@@ -550,7 +551,7 @@ hdfs dfs -ls /user/matymar7/order_count_by_status_snappy
  sc.textFile("/user/matymar7/order_count_by_status_snappy").collect.foreach(println)
 
 
-/*****save data in different file formats
+/*****save data in different file formats ***/
 
 val ordersDF=sqlContext.read.json("/public/retail_db_json/orders")
 
