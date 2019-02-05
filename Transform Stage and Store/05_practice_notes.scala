@@ -1,19 +1,14 @@
-spark-shell --master yarn \
- --conf spark.ui.port=12654 \
- --num-executors 1 \
- --executor-memory 512M
+/**create RDD***/
+//start spark spark-shell
+//print all conf
+//productsRaw variable: use scala source  to get file "/data/retail_db/products/part-00000" lines, convert to list
+//productsRDD variable: convert productsRaw to RDD
+//take sample and print 100
+//read orders as txt file "/public/retail_db/orders"
+//read orderItems as txt file "/public/retail_db/order_items"
+//read products as txt file "/public/retail_db/products"
 
-val orders = sc.textFile("/public/retail_db/orders")
 
-orders.take(10).foreach(println)
-
-val orderitems = sc.textFile("/public/retail_db/order_items")
-
-
-orderitems.take(10).foreach(println)
-
-val products = sc.textFile("/public/retail_db/products")
-products.take(10).foreach(println)
 
 /**create RDD***/
 //start spark spark-shell

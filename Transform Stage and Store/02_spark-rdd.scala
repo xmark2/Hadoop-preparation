@@ -1,8 +1,12 @@
 /**create RDD***/
 //start spark spark-shell
+//print all conf
 //productsRaw variable: use scala source  to get file "/data/retail_db/products/part-00000" lines, convert to list
 //productsRDD variable: convert productsRaw to RDD
 //take sample and print 100
+//read orders as txt file "/public/retail_db/orders"
+//read orderItems as txt file "/public/retail_db/order_items"
+//read products as txt file "/public/retail_db/products"
 
 spark-shell --master yarn \
 	--conf spark.ui.port=12654 \
