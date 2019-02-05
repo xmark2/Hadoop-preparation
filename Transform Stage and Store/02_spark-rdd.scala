@@ -1,4 +1,8 @@
 /**create RDD***/
+//start spark spark-shell
+//productsRaw variable: use scala source  to get file "/data/retail_db/products/part-00000" lines, convert to list
+//productsRDD variable: convert productsRaw to RDD
+//take sample and print 100
 
 spark-shell --master yarn \
 	--conf spark.ui.port=12654 \
@@ -24,7 +28,13 @@ orders.takeSample(true,100).foreach(println)
 
 orders.collect
 
-
+/**json***/
+//scenarioA
+//ordersDF variable:	read from json ("/public/retail_db_json/orders")
+//show "order_id","order_date"
+//scenarioB
+//ordersDF variable:	load from json ("/public/retail_db_json/orders")
+//show all data from json
 
 /*scenarioA to read json***/
 
@@ -32,7 +42,7 @@ val ordersDF=sqlContext.read.json("/public/retail_db_json/orders")
 ordersDF.show
 ordersDF.schema
 ordersDF.select("order_id","order_date")
-ordersDF.select("order_id","order_date").show
+ordersDF.select("orde_id","order_date").show
 
 /*scenarioB to read json*/
 val ordersDF=sqlContext.load("/public/retail_db/orders","json")
@@ -42,8 +52,20 @@ ordersDF.show
 
 
 
-
 /*****transform stage and store***/
+//load orders /public/retail_db/orders
+//variable str: get first record
+//variable a: split str by comma and check 1,2,3 fields
+//convert field 1 to int (field0)
+//check field 2 like "2013", check field 2 like "2017"
+//variable orderDate: field 2 
+//filter for orderDate chars 0-10
+//filter for orderDate chars 5-7
+//filter for orderDate chars after 11
+//replace orderDate - with / in 
+//replace orderDate 07 with July
+//index place of 2 in orderDate
+
 
 val orders=sc.textFile("/public/retail_db/orders")
 val str = orders.first
@@ -70,6 +92,27 @@ orderDate.replace("07","July")
 
 orderDate.indexOf("2")
 orderDate.indexOf("2", 2)
+
+
+/*** map ***/
+//load orders /public/retail_db/orders
+//variable orderDate and split records by comma, get field 2, chars 0-10, and change - with "" and convert to int
+//take 10 records and print
+//variable ordersPairedRDD and 
+	//split records by comma, tuple field 1 and field 2
+	//get field 1 convert to int
+	//get field 2, chars 0-10, and change - with "" and convert to int
+	//take 10 records and print
+/*** flatmap ***/
+//variable l: create a list for these 
+	//"hello","How are you doing","Let us perform word count","As part of the word count program","we will see how many times each word repeat"
+//variable l_rdd: 	convert productsRaw to RDD	
+//variable l_flatmap: convert each word to one list
+//collect and print l_flatmap
+// variable wordcount: count the words from l_flatmap
+
+
+
 
 /*** map ***/
 
@@ -221,38 +264,85 @@ ordersWithNoOrderItem.take(10).foreach(println)
 
 
 /*****aggregations ***/
-
-/*countByKey, reduce, groupByKey */
-
-val orders=sc.textFile("/public/retail_db/orders")
+/*countByKey, reduce, groupByKey, sorting, reduceByKey, aggregateByKey */
 
 /*countByKey*/
+//load orders /public/retail_db/orders
+//get orders field 3 (order_status) and count by status, print 
+
+/*reduce*/
+//load orderItems /public/retail_db/order_items
+//variable orderItemsRevenue: split rec by comma and get field 5 (subtotal), convert to float
+//get the total revenue 
+
+/*groupByKey*/
+//load orderItems /public/retail_db/order_items
+//variable orderItemsMap
+	//split records by comma
+	//get field 2 (order_id) and field 5 (subtotal) to a tuple
+	//convert field 2 to int, field 5 to float
+//variable orderItemsGBK and group orderItemsMap
+	//print 10 records
+//get orderItemsGBK 
+	//field 1 and field2 to a tuple
+	//convert field 2 to list and summarize
+	////print 10 records
+
+
+
+/*countByKey*/
+val orders=sc.textFile("/public/retail_db/orders")
+
 orders.map(order=>(order.split(",")(3),"")).countByKey.foreach(println)
 
+
+
+
+/*reduce*/
 val orderItems=sc.textFile("/public/retail_db/order_items/")
 orderItems.take(10).foreach(println)
 
 val orderItemsRevenue = orderItems.map(oi=> oi.split(",")(4).toFloat)
 orderItemsRevenue.take(10).foreach(println)
 
-/*reduce*/
 orderItemsRevenue.reduce((total, revenue) => total+revenue)
 val orderItemsMaxRevenue=orderItemsRevenue.reduce((max,revenue) => {
  if(max<revenue) revenue else max
 })
 
+
+
+
+
+
+/*groupByKey*/
+
 val orderItemsMap = orderItems.map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
 orderItemsMap .take(10).foreach(println)  
 
-/*groupByKey*/
+
 val orderItemsGBK=orderItemsMap.groupByKey
 orderItemsGBK.take(10).foreach(println)    
 
 orderItemsGBK.map(rec=>rec._2.toList.sum).take(10).foreach(println)
-
 orderItemsGBK.map(rec=>(rec._1, rec._2.toList.sum)).take(10).foreach(println)  
 
+
+
+
+
+
+
+
+
 /** sorting */
+//variable l iterable "343,5,6343,7,1" convert to list
+//use 2 diff way for sorting
+//variable ordersSortedByRevenue
+	//get all records from orderItemsGBK to a list (flatmap)
+	//convert field 2 to list and desc (revenue)
+	//map back the orderItemsGBK field 1 and the revenue to a tuple
+	//print 10 records
 
 val l = Iterable(343,5,6343,7,1).toList
 
@@ -261,13 +351,26 @@ l.sortBy(o=>-o)
 
 val ordersSortedByRevenue = orderItemsGBK.
  flatMap(rec=>{
- rec._2.toList.sortBy(o=>-o).map(k=>(rec._l,k))
+ rec._2.toList.sortBy(o => -o).map(k=>(rec._1,k))
 })
 
 ordersSortedByRevenue.take(10).foreach(println)  
 
 
+
+
+
+
 /* reduceByKey */
+//load orderItems /public/retail_db/order_items
+//variable orderItemsMap
+	//split records by comma
+	//get field 2 (order_id) and field 5 (subtotal) to a tuple
+	//convert field 2 to int, field 5 to float
+//variable revenuePerOrderId: get the total revenue per order_id
+//variable minRevenuePerOrderId: get the minimum revenue per order_id
+//sort minRevenuePerOrderId by order_id
+
 
 val orderItems=sc.textFile("/public/retail_db/order_items/") 
 val orderItemsMap = orderItems.map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
@@ -286,7 +389,28 @@ orderItemsMap.sortByKey().take(10).foreach(println)
 minRevenuePerOrderId.sortByKey().take(10).foreach(println)
 
 
+
+
+
 /* aggregateByKey */
+//load orderItems /public/retail_db/order_items
+//variable orderItemsMap
+	//split records by comma
+	//get field 2 (order_id) and field 5 (subtotal) to a tuple
+	//convert field 2 to int, field 5 to float
+//variable revenueAndMaxPerProductID 
+	//*output (order_id, (subtotal))
+	//get orderItemsMap and aggregateByKeym result as 0.0,0.0 decimals
+	//value1 subtotal: 
+		//inter, subtotal => inter field 1 +subtotal
+		// if subtotal> inter field 2 then subtotal else inter field 2
+	//value2 max: 
+		//total, inter => total field 1 + inter field 1
+		// if total field 2 > inter field 2 then total field 2 else inter field 2
+//print 10 records
+//retry the task with 1st decimals
+
+
 
 val orderItems=sc.textFile("/public/retail_db/order_items/") 
 val orderItemsMap = orderItems.map(oi => (oi.split(",")(1).toInt, oi.split(",")(4).toFloat))
@@ -307,6 +431,10 @@ val revenueAndMaxPerProductID=orderItemsMap.
  (total, inter)=>(total._1+inter._1, if(total._2>inter._2) total._2 else inter._2)
 )
 //(order_id, (order_revenue, max_order_item_subtotal))
+
+
+
+
 
 
 

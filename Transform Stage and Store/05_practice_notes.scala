@@ -15,6 +15,102 @@ orderitems.take(10).foreach(println)
 val products = sc.textFile("/public/retail_db/products")
 products.take(10).foreach(println)
 
+/**create RDD***/
+//start spark spark-shell
+//productsRaw variable: use scala source  to get file "/data/retail_db/products/part-00000" lines, convert to list
+//productsRDD variable: convert productsRaw to RDD
+//take sample and print 100
+
+
+/**json***/
+//scenarioA
+//ordersDF variable:	read from json ("/public/retail_db_json/orders")
+//show "order_id","order_date"
+//scenarioB
+//ordersDF variable:	load from json ("/public/retail_db_json/orders")
+//show all data from json
+
+
+
+/*****transform stage and store***/
+//load orders /public/retail_db/orders
+//variable str: get first record
+//variable a: split str by comma and check 1,2,3 fields
+//convert field 1 to int (field0)
+//check field 2 like "2013", check field 2 like "2017"
+//variable orderDate: field 2 
+//filter for orderDate chars 0-10
+//filter for orderDate chars 5-7
+//filter for orderDate chars after 11
+//replace orderDate - with / in 
+//replace orderDate 07 with July
+//index place of 2 in orderDate
+
+
+
+/*** map ***/
+//load orders /public/retail_db/orders
+//variable orderDate and split records by comma, get field 2, chars 0-10, and change - with "" and convert to int
+//take 10 records and print
+//variable ordersPairedRDD and 
+	//split records by comma, tuple field 1 and field 2
+	//get field 1 convert to int
+	//get field 2, chars 0-10, and change - with "" and convert to int
+	//take 10 records and print
+/*** flatmap ***/
+//variable l: create a list for these 
+	//"hello","How are you doing","Let us perform word count","As part of the word count program","we will see how many times each word repeat"
+//variable l_rdd: 	convert productsRaw to RDD	
+//variable l_flatmap: convert each word to one list
+//collect and print l_flatmap
+// variable wordcount: count the words from l_flatmap
+
+
+/*****aggregations ***/
+/*countByKey, reduce, groupByKey, sorting, reduceByKey, aggregateByKey */
+
+/*countByKey*/
+//load orders /public/retail_db/orders
+//get orders field 3 (order_status) and count by status, print 
+
+/*reduce*/
+//load orderItems /public/retail_db/order_items
+//variable orderItemsRevenue: split rec by comma and get field 5 (subtotal), convert to float
+//get the total revenue 
+
+/*groupByKey*/
+//load orderItems /public/retail_db/order_items
+//variable orderItemsMap
+	//split records by comma
+	//get field 2 (order_id) and field 5 (subtotal) to a tuple
+	//convert field 2 to int, field 5 to float
+//variable orderItemsGBK and group orderItemsMap
+	//print 10 records
+//get orderItemsGBK 
+	//field 1 and field2 to a tuple
+	//convert field 2 to list and summarize
+	////print 10 records
+
+/** sorting */
+//variable l iterable "343,5,6343,7,1" convert to list
+//use 2 diff way for sorting
+//variable ordersSortedByRevenue
+	//get all records from orderItemsGBK to a list (flatmap)
+	//convert field 2 to list and desc (revenue)
+	//map back the orderItemsGBK field 1 and the revenue to a tuple
+	//print 10 records
+
+
+
+
+
+
+
+
+
+
+
+
 /*****sorting ***/
 //task 1
 //load products
