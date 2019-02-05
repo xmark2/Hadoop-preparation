@@ -101,6 +101,35 @@ products.take(10).foreach(println)
 	//print 10 records
 
 
+/* reduceByKey */
+//load orderItems /public/retail_db/order_items
+//variable orderItemsMap
+	//split records by comma
+	//get field 2 (order_id) and field 5 (subtotal) to a tuple
+	//convert field 2 to int, field 5 to float
+//variable revenuePerOrderId: get the total revenue per order_id
+//variable minRevenuePerOrderId: get the minimum revenue per order_id
+//sort minRevenuePerOrderId by order_id
+
+
+
+/* aggregateByKey */
+//load orderItems /public/retail_db/order_items
+//variable orderItemsMap
+	//split records by comma
+	//get field 2 (order_id) and field 5 (subtotal) to a tuple
+	//convert field 2 to int, field 5 to float
+//variable revenueAndMaxPerProductID 
+	//*output (order_id, (subtotal))
+	//get orderItemsMap and aggregateByKeym result as 0.0,0.0 decimals
+	//value1 subtotal: 
+		//inter, subtotal => inter field 1 +subtotal
+		// if subtotal> inter field 2 then subtotal else inter field 2
+	//value2 max: 
+		//total, inter => total field 1 + inter field 1
+		// if total field 2 > inter field 2 then total field 2 else inter field 2
+//print 10 records
+//retry the task with 1st decimals
 
 
 
