@@ -1,0 +1,281 @@
+/*****simple import***/
+
+//import order_items table to "/user/matymar7/sqoop_import/retail_db"
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+//import order_items table to "/user/matymar7/sqoop_import/retail_db" and set  number of mappers to 1
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+
+
+/****managing directories ****/
+//import order_items table to "/user/matymar7/sqoop_import/retail_db" and set  number of mappers to 1 and delete data from target directory
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+//import order_items table to "/user/matymar7/sqoop_import/retail_db" and set  number of mappers to 1 and append data in target files
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+/**** using split by
+//numeric split
+//import t0117x_order_items_nopk table to "/user/matymar7/sqoop_import/retail_db" and split by order_item_order_id
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+//non-numeric split
+//import t0117_orders table to "/user/matymar7/sqoop_import/retail_db" and split by order_status
+//implement Drog.apache.sqoop.splitter.allow_text_splitter=true
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity  
+
+
+
+/****autoreset
+//import t0117x_order_items_nopk table to "/user/matymar7/sqoop_import/retail_db/auto" and set mapper to 1 with autoreset
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+/***import as squence file
+//import  order_items  table to "/user/matymar7/sqoop_import/retail_db" and set number of mappers to 2 and save as squence file
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+/***import as text file  
+//import order_items table to "/user/matymar7/sqoop_import/retail_db" and set number of mappers to 2 and save as textfile
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+/***compression
+//import order_items table to "/user/matymar7/sqoop_import/retail_db" and set number of mappers to 2 and save as textfile and compress
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+//import order_items table to "/user/matymar7/sqoop_import/retail_db" and set number of mappers to 2 and save as textfile and compress and use SnappyCodec as compression-codec
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+
+
+/***boundary query
+//import order_items table to "/user/matymar7/sqoop_import/retail_db" and use boundary query to select min,max order_item_id where order_item_id>99999
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+//import order_items table to "/user/matymar7/sqoop_import/retail_db" and use boundary query to select 100000, 172198
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+//import order_items table to "/user/matymar7/sqoop_import/retail_db" and use boundary query to select 100000, 140000
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+
+//****columns filter
+
+//import  order_items table to "/user/matymar7/sqoop_import/retail_db" and set num of mappers to 2 and import these fields: order_item_order_id, order_item_id, order_item_subtotal
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+//***transformation, sql query
+//mysql query: select o.*, sum(oi.order_item_subtotal) from orders o join order_items oi on o.order_id=oi.order_item_id group by o.order_id, o.order_date, o.order_customer_id, o.order_status;
+
+//import  mysql query to "/user/matymar7/sqoop_import/retail_db/orders_with_revenue" and set num of mappers to 2 and split by order_id
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+
+//***delimiters, null handling
+
+//import  employees table to "/user/matymar7/sqoop_import/hr_db" and set -1 for null in numeric fields, separate field by \t, separate lines with :
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username hr_user
+//password itversity
+
+//import  employees table to "/user/matymar7/sqoop_import/hr_db" and set -1 for null in numeric fields, separate field by \000, separate lines with :
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username hr_user
+//password itversity
+
+
+//***incremental load
+
+//manual way
+//mysql query: select o.* from orders where order_date like '2013-%';
+//query2 select o.* from orders where order_date like '2014-%';  
+//import  mysql query to "/user/matymar7/sqoop_import/retail_db/orders_with_revenue" and set num of mappers to 2 and split by order_id and append
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+//automatic way
+//import  orders table to "/user/matymar7/sqoop_import/retail_db/orders" and set num of mappers to 2 and check column order_date, last value 2014-02-28 and use incremental append
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+
+//***hive import 
+//log in to hive and create db matymar7_sqoop_import
+//import order_items table to hive and set  number of mappers to 2
+//import the data to hive db, table order_items, and overwrite if it's exist
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+//log in to hive and create db matymar7_sqoop_import
+//import orders table to hive and set  number of mappers to 2
+//import the data to hive db, table orders, and overwrite if it's exist
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+/***import all tables
+//log in to hive and create db matymar7_sqoop_import
+//import all tables to "/user/matymar7/sqoop_import/retail_db" and set mapper to 1 with autoreset
+//connect   jdbc:mysql://ms.itversity.com:3306/retail_db
+//username retail_user
+//password itversity
+
+
+
+
+
+
+
+
+
+
+/***** simple export
+/*preparation let's export data from hive to mysql
+//mysql -u retail_user -h ms.itversity.com -p
+	//show databases;
+	//use retail_export;
+	//create table t0117x_daily_revenue (order_date varchar(30), revenue float);
+//hive 
+	//use matymar7_sqoop_import;
+	//create table daily_revenue as select order_date, sum(order_item_subtotal) daily_revenue from orders o join order_items oi on //oi.order_item_order_id=o.order_id where order_date like '2013-07%' group by order_date;
+	//describe formatted daily_revenue;
+/**describe formatted shows where the hive stores the data
+/*sqoop export
+	//export hive t0117x_daily_revenue table (/apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue) to mysql and separate field by \001
+	//connect   jdbc:mysql://ms.itversity.com:3306/retail_export
+	//username retail_user
+	//password itversity
+
+
+
+//*** column mapping
+//mysql -u retail_user -h ms.itversity.com -p
+	//show databases;
+	//use retail_export;
+	//create table t0117x_daily_revenue_demo as select *, NULL description from t0117x_daily_revenue;
+	//alter table t0117x_daily_revenue_demo modify description varchar(200);
+/*sqoop export
+/*without -columns the export failing, because an extra field added for mapping task
+	//export hive t0117x_daily_revenue_demo table (/apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue) to mysql 
+	//separate field by \001 and num of map 2
+	//columns order_date, revenue
+	//connect   jdbc:mysql://ms.itversity.com:3306/retail_export
+	//username retail_user
+	//password itversity
+
+
+//*** update and upsert
+//mysql -u retail_user -h ms.itversity.com -p
+	//show databases;
+	//use retail_export;
+	//create table t0117x_daily_revenue_update (order_date varchar(30) primary key, revenue float);
+/*sqoop export
+/*the code failed for 2nd run because of PK
+	//export hive t0117x_daily_revenue_update table (/apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue) to mysql 
+	//separate field by \001 and num of map 1
+	//columns order_date, revenue
+	//connect   jdbc:mysql://ms.itversity.com:3306/retail_export
+	//username retail_user
+	//password itversity
+
+
+//update preparation
+//hive
+	//use matymar7_sqoop_import;
+	//insert into daily_revenue select order_date, sum(order_item_subtotal) daily_revenue from orders o join order_items oi on //oi.order_item_order_id=o.order_id where order_date like '2013-08%' group by order_date;
+
+//mysql -u retail_user -h ms.itversity.com -p
+	//use retail_export;
+	//update t0117x_daily_revenue_update set revenue=0;
+
+/*update-key added to the sqoop code
+/*sqoop export
+/*the code failed for 2nd run because of PK
+	//export hive t0117x_daily_revenue_update table (/apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue) to mysql 
+	//separate field by \001 and num of map 1
+	//update based on order_date
+	//enable/ allow insert mode
+	//columns order_date, revenue
+	//connect   jdbc:mysql://ms.itversity.com:3306/retail_export
+	//username retail_user
+	//password itversity
+
+
+
+
+//*** staging tables
+/*preparation let's export data from hive to mysql staging then mysql table
+//hive 
+	//use matymar7_sqoop_import;
+	//truncate table daily_revenue;
+	//insert into daily_revenue select order_date, sum(order_item_subtotal) daily_revenue from orders o join order_items oi on //oi.order_item_order_id=o.order_id group by order_date;
+	//describe formatted daily_revenue;
+//mysql -u retail_user -h ms.itversity.com -p
+	//show databases;
+	//use retail_export;
+	//truncate table t0117x_daily_revenue;
+	//create table t0117x_daily_revenue_stage (order_date varchar(30), revenue float);
+/*sqoop export
+	//export hive t0117x_daily_revenue table (/apps/hive/warehouse/matymar7_sqoop_import.db/daily_revenue) to mysql 
+	//and separate field by \001
+	//set t0117x_daily_revenue_stage as staging table
+	//clear staging 
+	//connect   jdbc:mysql://ms.itversity.com:3306/retail_export
+	//username retail_user
+	//password itversity
