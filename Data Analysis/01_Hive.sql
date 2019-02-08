@@ -361,3 +361,166 @@ from orders o join order_items oi
 on o.order_id = oi.order_item_order_id
 where o.order_status in ('COMPLETE', 'CLOSED')
 group by order_date; 
+
+
+/***Sorting*/
+
+select o.order_id, o.order_date, o.order_status, round(sum(oi.order_item_subtotal) order_revenue 
+from orders o join order_items oi 
+on o.order_id = oi.order_item_order_id
+where o.order_status in ( 'COMPLETE' , 'CLOSED')
+group by o.order_id, o.order_date, o.order_status 
+having sum(oi.order_item_subtotal) >=1000 
+order by o.order_date, order_revenue desc; 
+
+//*Distribute by sorting*/
+
+select o.order_id, o.order_date, o.order_status, round(sum(oi.order_item_subtotal) order_revenue 
+from orders o join order_items oi 
+on o.order_id = oi.order_item_order_id
+where o.order_status in ( 'COMPLETE' , 'CLOSED')
+group by o.order_id, o.order_date, o.order_status 
+having sum(oi.order_item_subtotal) >=1000 
+distribute by o.order_date sort by o.order_date, order_revenue desc;
+
+
+/***Set Operations*/
+
+
+select 1, "Hello"
+union all
+select 2, "Hello"
+union all
+select 3, "Hello"
+
+
+select 1, "Hello"
+union 
+select 2, "Hello"
+union 
+select 3, "Hello"
+
+
+/***Analytics functions*/
+
+/*
+RANK
+ROW_NUMBER
+DENSE_RANK
+CUME_DIST
+PERCENT_RANK
+NTILE
+*/
+
+select o.order_id, o. order_date, o. order_status, oi.order_item_subtotal,
+round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2) order_revenue, 
+oi.order_item_subtotal/round(sum(oi.order_item_subtotal) over (partition by o.order_id) pct_revenue
+from orders o join order_items oi 
+on o.order_id = oi.order_item_order_id 
+where o.order_status in ( 'COMPLETE' , 'CLOSED')
+order by o.order_date, order_revenue desc; 
+
+
+select * from ( 
+select o.order_id, o.order_date, o.order_status, oi.order_item_subtotal,
+round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2) order_revenue, 
+oi.order_item_subtotal/round(sum(oi.order_item_subtotal) over (partition by o.order_id) pct_revenue
+from orders o join order_items oi 
+on o.order_id =oi.order_item_order_id 
+where o.order_status in ( 'COMPLETE' , 'CLOSED')) q
+where order_revenue >=1000 
+order by order_date, order_revenue desc; 
+
+
+select * from ( 
+select o.order_id, o.order_date, o.order_status, oi.order_item_subtotal,
+round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2) order_revenue, 
+oi.order_item_subtotal/round(sum(oi.order_item_subtotal) over (partition by o.order_id) pct_revenue,
+round(avg(oi.order_item_subtotal) over (partition by o.order_id), 2) avg_revenue 
+from orders o join order_items oi 
+on o.order_id =oi.order_item_order_id 
+where o.order_status in ( 'COMPLETE' , 'CLOSED')) q
+where order_revenue >=1000 
+order by order_date, order_revenue desc; 
+
+
+/*ranking*/
+
+select * from ( 
+select o.order_id, o.order_date, o.order_status, oi.order_item_subtotal,
+round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2) order_revenue, 
+oi.order_item_subtotal/round(sum(oi.order_item_subtotal) over (partition by o.order_id) pct_revenue,
+round(avg(oi.order_item_subtotal) over (partition by o.order_id), 2) avg_revenue 
+rank() over(partition by o.order_id order by oi.order_item_subtotal desc) rnk_revenue,
+dense_rank() over(partition by o.order_id order by oi.order_item_subtotal desc) dense_rnk_revenue,
+percent_rank() over(partition by o.order_id order by oi.order_item_subtotal desc) pct_rnk_revenue,
+row_number() over(partition by o.order_id order by oi.order_item_subtotal desc) rn_orderby_revenue,
+row_number() over(partition by o.order_id) rn_revenue
+from orders o join order_items oi 
+on o.order_id =oi.order_item_order_id 
+where o.order_status in ( 'COMPLETE' , 'CLOSED')) q
+where order_revenue >=1000 
+order by order_date, order_revenue desc, rnk_revenue;
+
+
+/***Windowing functions*/
+
+/*
+LEAD
+LAG
+FIRST_VALUE
+LAST_VALUE
+*/
+
+
+select * from ( 
+select o.order_id, o.order_date, o.order_status, oi.order_item_subtotal,
+round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2) order_revenue, 
+oi.order_item_subtotal/round(sum(oi.order_item_subtotal) over (partition by o.order_id) pct_revenue,
+round(avg(oi.order_item_subtotal) over (partition by o.order_id), 2) avg_revenue 
+rank() over(partition by o.order_id order by oi.order_item_subtotal desc) rnk_revenue,
+dense_rank() over(partition by o.order_id order by oi.order_item_subtotal desc) dense_rnk_revenue,
+percent_rank() over(partition by o.order_id order by oi.order_item_subtotal desc) pct_rnk_revenue,
+row_number() over(partition by o.order_id order by oi.order_item_subtotal desc) rn_orderby_revenue,
+row_number() over(partition by o.order_id) rn_revenue,
+lead(oi.order_item_subtotal) over(partition by o.order_id order by oi.order_item_subtotal desc)
+lead_order_item_subtotal,
+lag(oi.order_item_subtotal) over(partition by o.order_id order by oi.order_item_subtotal desc)
+lag_order_item_subtotal,
+first_value(oi.order_item_subtotal) over(partition by o.order_id order by oi.order_item_subtotal desc)
+first_order_item_subtotal,
+last_value(oi.order_item_subtotal) over(partition by o.order_id order by oi.order_item_subtotal desc)
+last_order_item_subtotal
+
+from orders o join order_items oi 
+on o.order_id =oi.order_item_order_id 
+where o.order_status in ( 'COMPLETE' , 'CLOSED')) q
+where order_revenue >=1000 
+order by order_date, order_revenue desc, rnk_revenue;
+
+
+
+select * from ( 
+select o.order_id, o.order_date, o.order_status, oi.order_item_subtotal,
+round(sum(oi.order_item_subtotal) over (partition by o.order_id), 2) order_revenue, 
+oi.order_item_subtotal/round(sum(oi.order_item_subtotal) over (partition by o.order_id) pct_revenue,
+round(avg(oi.order_item_subtotal) over (partition by o.order_id), 2) avg_revenue 
+rank() over(partition by o.order_id order by oi.order_item_subtotal desc) rnk_revenue,
+dense_rank() over(partition by o.order_id order by oi.order_item_subtotal desc) dense_rnk_revenue,
+percent_rank() over(partition by o.order_id order by oi.order_item_subtotal desc) pct_rnk_revenue,
+row_number() over(partition by o.order_id order by oi.order_item_subtotal desc) rn_orderby_revenue,
+row_number() over(partition by o.order_id) rn_revenue,
+lead(oi.order_item_subtotal) over(partition by o.order_id order by oi.order_item_subtotal desc)
+lead_order_item_subtotal,
+lag(oi.order_item_subtotal) over(partition by o.order_id order by oi.order_item_subtotal desc)
+lag_order_item_subtotal,
+first_value(oi.order_item_subtotal) over(partition by o.order_id order by oi.order_item_subtotal desc)
+first_order_item_subtotal - oi.order_item_subtotal,
+last_value(oi.order_item_subtotal) over(partition by o.order_id order by oi.order_item_subtotal desc)
+last_order_item_subtotal
+
+from orders o join order_items oi 
+on o.order_id =oi.order_item_order_id 
+where o.order_status in ( 'COMPLETE' , 'CLOSED')) q
+where order_revenue >=1000 
+order by order_date, order_revenue desc, rnk_revenue;
