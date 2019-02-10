@@ -8,7 +8,23 @@
 //read orderItems as txt file "/public/retail_db/order_items"
 //read products as txt file "/public/retail_db/products"
 
+spark-shell --master yarn \
+	--conf spark.ui.port=12654 \
+	--num-executors 1 \
+	--executor-memory 512M
+sc.getConf.getAll.foreach(println)
 
+var productsRaw=scala.io.Source.fromFile("/data/retail_db/products/part-00000").getLines.toList
+var productsRDD=sc.parallelize(productsRaw)
+productsRDD.takeSample(true, 100).foreach(println)
+
+var orders=sc.textFile("/public/retail_db/orders")
+var orderItems=sc.textFile("/public/retail_db/order_items")
+var propucts=sc.textFile("/public/retail_db/products")
+
+orders.take(100).foreach(println)
+orderItems.take(100).foreach(println)
+propucts.take(100).foreach(println)
 
 /**create RDD***/
 //start spark spark-shell
@@ -25,6 +41,11 @@
 //ordersDF variable:	load from json ("/public/retail_db_json/orders")
 //show all data from json
 
+var ordersDF=sqlContext.read.json("/public/retail_db_json/orders")
+ordersDF.show
+ordersDF.select("order_id", "order_date").show
+var ordersDF2=sqlContext.load("/public/retail_db_json/orders","json")
+ordersDF2.show
 
 
 /*****transform stage and store***/
@@ -40,6 +61,25 @@
 //replace orderDate - with / in 
 //replace orderDate 07 with July
 //index place of 2 in orderDate
+
+
+var orders = sc.textFile("/public/retail_db/orders")
+var str = orders.first
+var a = str.split(",")
+a(0)
+a(1)
+a(2)
+a(0).toInt
+a(1).contains("2013")
+a(1).contains("2017")
+
+var orderDate=a(1)
+orderDate.substring(0,10)
+orderDate.substring(5,7)
+orderDate.substring(11)
+orderDate.replace('-','/')
+orderDate.replace("07","July")
+orderDate.indexOf("2",2)
 
 
 
@@ -61,6 +101,26 @@
 // variable wordcount: count the words from l_flatmap
 
 
+var orders = sc.textFile("/public/retail_db/orders")
+var orderDate = orders.map(o=>o.split(",")(1).substring(0,10).replace("-","").toInt)
+orderDate.take(10).foreach(println)
+var ordersPairedRDD=orders.map(order=>{
+ val o=order.split(",")
+ (o(0).toInt,o(1).substring(0,10).replace("-","").toInt)
+})
+ordersPairedRDD.take(10).foreach(println)
+
+var l=Iterable("hello","How are you doing","Let us perform word count","As part of the word count program","we will see how many times each word repeat").toList
+var l_rdd=sc.parallelize(l)
+l_rdd.collect.foreach(println)
+var l_flatmap=l_rdd.flatMap(rec=>{
+ (rec.toLowerCase.split(" ").toList)
+})
+l_flatmap.collect.foreach(println)
+l_flatmap.countByValue
+
+l_flatmap.map(word=>(word,"")).countByKey
+
 /*****aggregations ***/
 /*countByKey, reduce, groupByKey, sorting, reduceByKey, aggregateByKey */
 
@@ -68,10 +128,20 @@
 //load orders /public/retail_db/orders
 //get orders field 3 (order_status) and count by status, print 
 
+var orders = sc.textFile("/public/retail_db/orders")
+orders.map(o=>(o.split(",")(3),1)).countByKey.foreach(println)
+
 /*reduce*/
 //load orderItems /public/retail_db/order_items
 //variable orderItemsRevenue: split rec by comma and get field 5 (subtotal), convert to float
 //get the total revenue 
+
+var orderItems=sc.textFile("/public/retail_db/order_items")
+var orderItemsRevenue=orderItems.map(order=>{
+ order.split(",")(4).toFloat
+})
+orderItemsRevenue.take(10).foreach(println)
+orderItemsRevenue.reduce((total, revenue)=>total+revenue)
 
 /*groupByKey*/
 //load orderItems /public/retail_db/order_items
@@ -86,6 +156,16 @@
 	//convert field 2 to list and summarize
 	////print 10 records
 
+var orderItems=sc.textFile("/public/retail_db/order_items")
+var orderItemsMap=orderItems.map(orderitem=>{
+ var oi=orderitem.split(",")
+ (oi(1).toInt, oi(4).toFloat)
+})
+orderItemsMap.take(10).foreach(println)
+var orderItemsGBK=orderItemsMap.groupByKey
+orderItemsGBK.take(10).foreach(println)
+orderItemsGBK.map(rec=>(rec._1, rec._2.toList.sum)).take(10).foreach(println)
+
 /** sorting */
 //variable l iterable "343,5,6343,7,1" convert to list
 //use 2 diff way for sorting
@@ -95,6 +175,15 @@
 	//map back the orderItemsGBK field 1 and the revenue to a tuple
 	//print 10 records
 
+var l = Iterable(343,5,6343,7,1).toList
+l.sorted
+l.sortBy(o => o)
+
+orderItemsGBK.take(10).foreach(println)
+
+var ordersSortedByRevenue = orderItemsGBK.
+ flatMap(rec=>(rec._2.toList.sortBy(o => -o).map(k=>(rec._1,k))))
+ordersSortedByRevenue.take(10).foreach(println)
 
 /* reduceByKey */
 //load orderItems /public/retail_db/order_items
@@ -106,7 +195,18 @@
 //variable minRevenuePerOrderId: get the minimum revenue per order_id
 //sort minRevenuePerOrderId by order_id
 
+var orderItems=sc.textFile("/public/retail_db/order_items")
+var orderItemsMap=orderItems.map(orderitem=>{
+ var oi=orderitem.split(",")
+ (oi(1).toInt, oi(4).toFloat)
+})
+var revenuePerOrderId=orderItemsMap.
+ reduceByKey((total,rev)=>total+rev)
+var minRevenuePerOrderId=orderItemsMap.
+ reduceByKey((min,rev)=>if (min<rev) min else rev)
+minRevenuePerOrderId.take(10).foreach(println)
 
+minRevenuePerOrderId.sortBy(o => o).take(10).foreach(println)
 
 /* aggregateByKey */
 //load orderItems /public/retail_db/order_items
@@ -146,6 +246,12 @@
 //and get field 1 as int field 4 (price negative tag) as float, (field1,field4) and all the product fields
 //sort by category id
 //show the 2 element of the tuple
+
+var products=sc.textFile("/public/retail_db/products")
+products.map(rec=>(-rec.split(",")(1).toInt, (rec))).sortByKey().take(10).foreach(println)
+
+
+
 
 
 
