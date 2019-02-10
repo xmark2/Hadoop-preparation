@@ -38,7 +38,7 @@
 
 //non-numeric split
 //import t0117_orders table to "/user/matymar7/sqoop_import/retail_db" and split by order_status
-//implement Drog text
+//implement Dorg text
 //connect   jdbc:mysql://ms.itversity.com:3306/retail_db
 //username retail_user
 //password itversity  
