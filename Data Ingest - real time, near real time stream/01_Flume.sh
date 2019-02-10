@@ -179,7 +179,7 @@ hdfs fs -cat /user/matymar7/flume_demo/FlumeData.15113...
 ########################################
 # Name the components on this agent 
 wh.sources = ws 
-wh.sinks = hdfs 
+wh.sinks = hd 
 wh.channels = mem 
 
 # Describe/configure the source 
@@ -204,7 +204,7 @@ wh.channels.mem.transactioncapacity = 100
 
 # Bind the source and sink to the channel 
 wh.sources.ws.channels = mem 
-wh.sinks.hdfs.channel = mem 
+wh.sinks.hd.channel = mem 
 
 
 :x

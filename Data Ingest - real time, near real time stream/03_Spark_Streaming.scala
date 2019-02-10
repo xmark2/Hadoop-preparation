@@ -244,6 +244,11 @@ object StreamingDepartmentCount {
 		 	val endPoint = msg.split(" ")(6)
 		 	endPoint.split("/")(1) == "department"
 		 })
+		val departments = messages.
+		 filter(msg => {
+		 	val endPoint = msg.split(" ")(6)
+		 	endPoint.split("/")(1)
+		 })
 		val departmentTraffic = departments.
 		 reduceByKey((total,value) => total + value)
 
