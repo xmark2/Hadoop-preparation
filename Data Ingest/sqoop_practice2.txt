@@ -319,3 +319,196 @@ sqoop import \
 --num-mappers 2
 
 
+
+
+================================
+===problem 12
+
+alter table t0117x_departments modify column created_date datetime default CURRENT_TIMESTAMP;
+
+delete from t0117x_departments where department_id>7;
+
+
+update t0117x_departments set created_date='2019-02-01 15:50:46' where department_id=2;
+update t0117x_departments set created_date='2019-02-02 15:50:46' where department_id=3;
+update t0117x_departments set created_date='2019-02-03 15:50:46' where department_id=4;
+update t0117x_departments set created_date='2019-02-04 15:50:46' where department_id=5;
+update t0117x_departments set created_date='2019-02-05 15:50:46' where department_id=6;
+update t0117x_departments set created_date='2019-02-06 15:50:46' where department_id=7;
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments \
+--target-dir "sqoop/problem12" \
+--split-by department_id \
+--num-mappers 2 
+
+
+insert into t0117x_departments (department_id, department_name) values (8, "physics");
+insert into t0117x_departments (department_id, department_name) values (9, "chemistry");
+insert into t0117x_departments (department_id, department_name) values (10, "math");
+insert into t0117x_departments (department_id, department_name) values (11, "science");
+insert into t0117x_departments (department_id, department_name) values (12, "engineering");
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments \
+--target-dir "sqoop/problem12" \
+--incremental append \
+--check-column created_date \
+--last-value "2019-02-06 15:50:46" \
+--split-by department_id \
+--num-mappers 2 
+
+
+
+
+
+
+
+================================
+===problem 13
+
+
+//preparation import table data to hdfs first and after export to mysql
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments_new \
+--target-dir "sqoop/problem13/departments_new" \
+--num-mappers 1
+
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments_new \
+--export-dir "sqoop/problem13/departments_new"
+
+
+
+================================
+===problem 14
+
+hdfs dfs -cp sqoop/problem7/departments sqoop/problem14
+
+select * from t0117x_departments_new;
+delete from t0117x_departments_new where department_id in (5,6,7);
+delete from t0117x_departments_new where department_id in (111) and department_name='Padma';
+
+
+delete from t0117x_departments_new where department_id in (5,6,7);
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments_new \
+--columns department_id,department_name \
+--export-dir "sqoop/problem14/departments" \
+--update-key department_id \
+--update-mode allowinsert
+
+
+
+================================
+===problem 15
+
+delete from t0117x_departments_new where department_id in (8888);
+
+insert into t0117x_departments_new (department_id, department_name) values (9999, 'Data Science');
+insert into t0117x_departments_new (department_id, department_name) values (8888, '"Data Science"');
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments_new \
+--num-mappers 1 \
+--target-dir "sqoop/problem15/departments_new" \
+--fields-terminated-by '~' \
+--lines-terminated-by ':' \
+--enclosed-by '"' \
+--escaped-by \\
+
+
+
+
+================================
+===problem 16
+
+
+create table departments(department_id int, department_name string);
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments_new \
+--columns department_id,department_name \
+--hive-import \
+--hive-database matymar7 \
+--hive-table departments \
+--num-mappers 1
+
+
+================================
+===problem 17
+
+
+select table_name from INFORMATION_SCHEMA.TABLES where table_name like "t0117%";
+
+//hive table
+create table departments_hive01 (department_id int, department_name string, avg_salary int);
+
+//mysql table
+create table t0117x_departments_hive01 (id int, department_name varchar(45), avg_salary int);
+
+insert into t0117x_departments_hive01 (id, department_name) select department_id, department_name from t0117x_departments;
+
+select * from t0117x_departments_hive01;
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments_hive01 \
+--columns id,department_name \
+--hive-import \
+--hive-database matymar7 \
+--hive-table departments_hive01 \
+--num-mappers 1
+
+
+
+
+================================
+===problem 18
+
+
+create table t0117x_departments_hive02 (id int, department_name varchar(45), avg_salary int);
+
+
+select * from t0117x_departments_hive02;
+
+
+sqoop export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments_hive02 \
+--export-dir "hdfs://nn01.itversity.com:8020/apps/hive/warehouse/matymar7.db/departments_hive01"
+
+???
+
+
