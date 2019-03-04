@@ -1,0 +1,281 @@
+sqoop eval \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--query "select * from categories"
+
+==========================================
+===problem3
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table categories \
+--target-dir "user/matymar7/sqoop/problem3/categories" \
+--num-mappers 1
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table categories \
+--target-dir "sqoop/problem3/categories" \
+--num-mappers 1
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table categories \
+--target-dir "sqoop/problem3/categoriesH22" \
+--where "category_id>22" \
+--num-mappers 1
+
+
+
+
+hdfs dfs -ls hdfs://nn01.itversity.com:8020/user/matymar7/user/matymar7/sqoop/problem3/categories
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table categories \
+--target-dir "sqoop/problem3/categoriesE22" \
+--where "category_id=22" \
+--num-mappers 1
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table categories \
+--target-dir "sqoop/problem3/categoriesB22" \
+--where "category_id between 5 and 22" \
+--num-mappers 1
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table categories \
+--target-dir "sqoop/problem3/categoriesFields" \
+--fields-terminated-by "|" \
+--num-mappers 1
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table categories \
+--columns category_id,category_name \
+--target-dir "sqoop/problem3/categoriesFields2" \
+--fields-terminated-by "|" \
+--num-mappers 1
+
+use retail_export;
+create table t0117x_categories select * from retail_db.categories;
+
+alter table t0117x_categories modify category_department_id int(11) null;
+
+insert into t0117x_categories (category_id,category_department_id,category_name) VALUES (60,NULL,"testing")
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_categories \
+--target-dir "sqoop/problem3/categoriesNulls" \
+--where "category_id between 7 and 61" \
+--null-non-string -1 \
+--fields-terminated-by "|" \
+--num-mappers 1
+
+
+hdfs dfs -cat sqoop/problem3/categoriesNulls/part-m-00000
+
+
+sqoop import-all-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--warehouse-dir "sqoop/problem3/retail_export"
+
+
+================================
+===problem 4
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_categories \
+--where "category_id between 1 and 22" \
+--target-dir "sqoop/problem4" \
+--num-mappers 1
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_categories \
+--where "category_id between 1 and 22" \
+--hive-import \
+--hive-database matymar7 \
+--hive-table categoriesP4 \
+--num-mappers 1
+
+
+
+================================
+===problem 5
+
+
+sqoop list-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity
+
+
+sqoop eval \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--query "select count(1) from products"
+
+
+sqoop import-all-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--warehouse-dir "sqoop/problem5/retail_db" \
+--num-mappers 1 \
+--as-avrodatafile
+
+
+sqoop import-all-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--warehouse-dir "sqoop/problem5/retail_dbTXT" \
+--num-mappers 1 \
+--as-textfile
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--target-dir "sqoop/problem5/departments" \
+--num-mappers 1 \
+--as-textfile
+
+
+
+
+================================
+===problem 6
+
+
+org.apache.hadoop.io.compress.SnappyCodec
+
+
+create database matymar7P6;
+
+sqoop import-all-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--hive-import \
+--hive-database matymar7P6 \
+--num-mappers 3
+
+
+create database matymar7P6j;
+
+
+sqoop import-all-tables \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--hive-import \
+--hive-database matymar7P6j \
+--num-mappers 3 \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+--outdir java-output
+
+
+
+
+================================
+===problem 7
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--warehouse-dir "sqoop/problem7" \
+--num-mappers 2
+
+
+--boundary-query "select * from departments where department_id between 1 and 25" \
+
+
+
+
+
+
+================================
+===problem 9
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--warehouse-dir "sqoop/problem9" \
+--fields-terminated-by '|' \
+--lines-terminated-by '\n' \
+--num-mappers 2
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--warehouse-dir "sqoop/problem9" \
+--fields-terminated-by '|' \
+--lines-terminated-by '\n' \
+--append \
+--num-mappers 2
+
+
+
+================================
+===problem 10
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--hive-import \
+--hive-database matymar7 \
+--create-hive-table \
+--hive-table departmentsNew \
+--num-mappers 2
