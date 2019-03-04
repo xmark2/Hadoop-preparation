@@ -279,3 +279,43 @@ sqoop import \
 --create-hive-table \
 --hive-table departmentsNew \
 --num-mappers 2
+
+
+================================
+===problem 11
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--target-dir "sqoop/problem11" \
+--num-mappers 2
+
+
+use retail_export;
+create table t0117x_departments select * from retail_db.departments;
+
+
+insert into t0117x_departments values (8, "physics");
+insert into t0117x_departments values (9, "chemistry");
+insert into t0117x_departments values (10, "math");
+insert into t0117x_departments values (11, "science");
+insert into t0117x_departments values (12, "engineering");
+
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export \
+--username retail_user \
+--password itversity \
+--table t0117x_departments \
+--target-dir "sqoop/problem11" \
+--incremental append \
+--check-column department_id \
+--last-value "7" \
+--split-by department_id \
+--num-mappers 2
+
+
