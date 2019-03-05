@@ -158,15 +158,15 @@ object StreamingWordCount {
 sbt package
 
 //check the jar file created
-scp target/scala-2.10/retail_2.10-1.0.jar matymar7@gw01.itversity.com 
+scp target/scala-2.10/retail_2.10-1.0.jar matymar7@gw02.itversity.com 
 
 
 
 //open a new terminal for web service
-nc -lk gw01.itversity.com 9999
+nc -lk gw02.itversity.com 9999
 
 //go back to the 1st terminal and run the following
-telnet gw01.itversity.com 9999
+telnet gw02.itversity.com 9999
 
 //quit from telnet
 quit
@@ -176,12 +176,12 @@ spark-submit \
  --class StreamingWordCount \
  --master yarn \
  --conf spark.ui.port=12657 \
- retail_2_10-1.0.jar yarn-client gw01.itversity.com 9999
+ retail_2_10-1.0.jar yarn-client gw02.itversity.com 9999
 
 
 //go to the second terminal 
 //and type some words as well that we will track in the other terminal with counting
-nc -lk gw01.itversity.com 9999
+nc -lk gw02.itversity.com 9999
 Hello world
 let us test word count
 program to get number of words
@@ -266,15 +266,15 @@ sbt package
 
 //copy the jar file to Cluster server:
 //1st login to the server
-ssh matymar7@gw01.itversity.com 
+ssh matymar7@gw02.itversity.com 
 
 tail_logs.sh 
 
 //let's create a web-service to our log
-tail_logs.sh|nc -lk gw01.itversity.com 8123
+tail_logs.sh|nc -lk gw02.itversity.com 8123
 
 //open another session to check the web-service
-telnet gw01.itversity.com 8123
+telnet gw02.itversity.com 8123
 
 //quit from telnet
 quit
@@ -285,7 +285,7 @@ spark-submit \
  --master yarn \
  --conf spark.ui.port=12678 \
  retail_2.10-1.0.jar \
- yarn-client gw01.itversity.com 8123
+ yarn-client gw02.itversity.com 8123
 
 
 //check our web-service location on the cluster

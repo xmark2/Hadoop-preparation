@@ -12,3 +12,11 @@ nc localhost 9999
 
 
 =========================
+//webservice -- telnet
+=========================
+
+//1st terminal
+nc -lk gw02.itversity.com 9999
+
+//2nd terminal
+telnet gw02.itversity.com 9999
