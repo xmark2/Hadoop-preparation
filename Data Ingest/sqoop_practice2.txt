@@ -512,3 +512,79 @@ sqoop export \
 ???
 
 
+================================
+===problem 20
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table categories \
+--target-dir "sqoop/problem20/categories" \
+--num-mappers 1
+
+
+sqoop job --create myjob \
+-- import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table categories \
+--target-dir "sqoop/problem20/categories" \
+--fields-terminated-by "|" \
+--delete-target-dir \
+--num-mappers 1
+
+sqoop job --help
+
+sqoop job --list
+sqoop job --show myjob
+sqoop job --delete myjob
+sqoop job --exec myjob
+sqoop job --verbose
+
+
+
+================================
+===problem 19
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--target-dir "sqoop/problem19/departmentsTXT" \
+--as-textfile \
+--num-mappers 1 
+
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--target-dir "sqoop/problem19/departmentsSEQ" \
+--as-sequencefile \
+--num-mappers 1 
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--target-dir "sqoop/problem19/departmentsAVRO" \
+--as-avrodatafile \
+--num-mappers 1 
+
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user \
+--password itversity \
+--table departments \
+--target-dir "sqoop/problem19/departmentsPAR" \
+--as-parquetfile \
+--num-mappers 1 
