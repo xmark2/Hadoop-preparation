@@ -495,11 +495,32 @@ sqoop import \
 ================================
 ===problem 18
 
+//mysql
+
+use retail_export;
 
 create table t0117x_departments_hive02 (id int, department_name varchar(45), avg_salary int);
 
-
 select * from t0117x_departments_hive02;
+describe t0117x_departments_hive02;
+
+	+-----------------+-------------+------+-----+---------+-------+
+	| Field           | Type        | Null | Key | Default | Extra |
+	+-----------------+-------------+------+-----+---------+-------+
+	| id              | int(11)     | YES  |     | NULL    |       |
+	| department_name | varchar(45) | YES  |     | NULL    |       |
+	| avg_salary      | int(11)     | YES  |     | NULL    |       |
+	+-----------------+-------------+------+-----+---------+-------+
+
+//hive
+
+select * from departments_hive01;
+describe departments_hive01;
+
+	//department_id       	int                 	                    
+	//department_name     	string              	                    
+	//avg_salary          	int                 	                    
+
 
 
 sqoop export \
@@ -507,9 +528,12 @@ sqoop export \
 --username retail_user \
 --password itversity \
 --table t0117x_departments_hive02 \
---export-dir "hdfs://nn01.itversity.com:8020/apps/hive/warehouse/matymar7.db/departments_hive01"
+--columns id,department_name \
+--export-dir "hdfs://nn01.itversity.com:8020/apps/hive/warehouse/matymar7.db/departments_hive01" \
+--input-fields-terminated-by "\001"
 
-???
+
+
 
 
 ================================
