@@ -20,3 +20,238 @@ nc -lk gw02.itversity.com 9999
 
 //2nd terminal
 telnet gw02.itversity.com 9999
+
+
+
+
+https://flume.apache.org/FlumeUserGuide.html
+
+
+=========================
+//Flume --default version
+=========================
+
+mkdir flume_demo
+vi example.conf
+
+=======
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = netcat
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44442
+
+# Describe the sink
+a1.sinks.k1.type = logger
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+=======
+
+
+
+#run flume-ng default version
+
+flume-ng agent --name a1 --conf-file /home/matymar7/flume_demo/example.conf --conf /etc/flume/conf
+
+
+
+
+
+
+
+
+
+
+copy # example.conf: A single-node Flume configuration
+mkdir wslogstohdfs
+
+cd wslogstohdfs
+vi
+#paste example.conf
+:wq wshdfs.conf
+
+#replace
+:%s/a1/wh
+:%s/rl/ws
+:%s/c1/mem
+:%s/k1/hdfs
+
+
+=== #change in wshdfs.conf file these lines ==============
+=========================================== FROM this ====
+# Describe/configure the source
+wh.sources.ws.type = netcat
+wh.sources.ws.bind = localhost
+wh.sources.ws.port = 44444
+
+# Describe the sink
+wh.sinks.hdfs.type = logger
+
+=========================================== To this ====
+# Describe/configure the source
+wh.sources.ws.type = exec
+wh.sources.ws.command = tail -F /opt/gen_logs/logs/access.log
+
+# Describe the sink
+wh.sinks.hd.type = hdfs
+wh.sinks.hd.hdfs.path = hdfs://nn01.itversity.com:8020/user/matymar7/flume_demo
+
+
+
+
+
+=========================
+//Flume -- version 1
+=========================
+
+
+# Name the components on this agent 
+wh.sources = ws 
+wh.sinks = k1 
+wh.channels = mem 
+
+# Describe/configure the source 
+wh.sources.ws.type = exec 
+wh.sources.ws.command = tail -F /opt/gen_logs/logs/access.log 
+
+# Describe the sink 
+wh.sinks.k1.type = logger
+
+# Use a channel which buffers events in memory 
+wh.channels.mem.type = memory 
+wh.channels.mem.capacity = 1000 
+wh.channels.mem.transactioncapacity = 100 
+
+# Bind the source and sink to the channel 
+wh.sources.ws.channels = mem 
+wh.sinks.k1.channel = mem 
+
+
+=========================
+
+
+
+#run the flume-ng version1
+flume-ng agent -n wh -f /home/matymar7/flume_demo/wslogstohdfs/wshdfs.conf --conf /etc/flume/conf
+
+
+
+
+
+
+
+
+
+=========================
+//Flume -- version 2
+=========================
+
+
+# Name the components on this agent 
+wh.sources = ws 
+wh.sinks = hd 
+wh.channels = mem 
+
+# Describe/configure the source 
+wh.sources.ws.type = exec 
+wh.sources.ws.command = tail -F /opt/gen_logs/logs/access.log 
+
+# Describe the sink 
+wh.sinks.hd.type = hdfs
+wh.sinks.hd.hdfs.path = hdfs://nn01.itversity.com:8020/user/matymar7/flume_demo/output
+
+
+# Use a channel which buffers events in memory 
+wh.channels.mem.type = memory 
+wh.channels.mem.capacity = 1000 
+wh.channels.mem.transactioncapacity = 100 
+
+# Bind the source and sink to the channel 
+wh.sources.ws.channels = mem 
+wh.sinks.hd.channel = mem 
+
+
+=========================
+
+
+
+
+
+
+#run the flume-ng version2
+flume-ng agent -n wh -f /home/matymar7/flume_demo/wslogstohdfs/wshdfs_v2.conf --conf /etc/flume/conf
+
+
+#check in another terminal
+
+hdfs dfs -cat flume_demo/output/FlumeData.1551900497072
+
+
+
+
+
+
+
+
+=========================
+//Flume -- version 3
+=========================
+
+
+# Name the components on this agent 
+wh.sources = ws 
+wh.sinks = hd 
+wh.channels = mem 
+
+# Describe/configure the source 
+wh.sources.ws.type = exec 
+wh.sources.ws.command = tail -F /opt/gen_logs/logs/access.log 
+
+# Describe the sink 
+wh.sinks.hd.type = hdfs
+wh.sinks.hd.hdfs.path = hdfs://nn01.itversity.com:8020/user/matymar7/flume_demo/output3
+
+wh.sinks.hd.hdfs.filePrefix = FlumeDemo 
+wh.sinks.hd.hdfs.fileSuffix = .txt
+wh.sinks.hd.hdfs.rollInternal = 120
+wh.sinks.hd.hdfs.rollSize = 1048576
+wh.sinks.hd.hdfs.rollCount = 100
+wh.sinks.hd.hdfs.fileType = DataStream
+
+# Use a channel which buffers events in memory 
+wh.channels.mem.type = memory 
+wh.channels.mem.capacity = 1000 
+wh.channels.mem.transactioncapacity = 100 
+
+# Bind the source and sink to the channel 
+wh.sources.ws.channels = mem 
+wh.sinks.hd.channel = mem 
+
+
+======
+
+
+
+
+
+##flume-ng version3
+
+flume-ng agent -n wh -f /home/matymar7/flume_demo/wslogstohdfs/wshdfs_v3.conf --conf /etc/flume/conf
+
+
+
+##check
+hdfs dfs -ls flume_demo/output3 
+
+hdfs dfs -cat flume_demo/output3/FlumeDemo.1551901176872.txt | wc -l
