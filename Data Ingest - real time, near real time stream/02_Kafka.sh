@@ -19,62 +19,62 @@ kafka
 
 ##now copy the code from documentation
 
-kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
 
 ## setup a unique name for topic
 
-kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic kafkademodg
+kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic matymar7
 
 ## we also need to configure our zookeeper
 
-kafka-topics.sh --create --zookeeper nn01.itversity.com:2181, nn02.itversity.com:2181, rm01.itversity.com:2181 --replication-factor 1 --partitions 1 --topic kafkademodg
+kafka-topics --create --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 --replication-factor 1 --partitions 1 --topic matymar7
 
 
 ## to validate topic is created run the cmd from documentation
 
 ##to list all topics
-kafka-topics.sh --list --zookeeper nn01.itversity.com:2181, nn02.itversity.com:2181, rm01.itversity.com:2181
+kafka-topics --list --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181
 
 ##to check the new topic
-kafka-topics.sh --list --zookeeper nn01.itversity.com:2181, nn02.itversity.com:2181, rm01.itversity.com:2181 --topic kafkademodg
+kafka-topics --list --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 --topic matymar7
 
 
 
 ################
 
-kafka-topics.sh --create \
- --zookeeper nn01.itversity.com:2181, nn02.itversity.com:2181, rm01.itversity.com:2181 
- --replication-factor 1 
- --partitions 1 
- --topic kafkademodg
+kafka-topics --create \
+ --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+ --replication-factor 1 \
+ --partitions 1 \
+ --topic matymar7
 
 
-kafka-topics.sh --list \
- --zookeeper nn01.itversity.com:2181, nn02.itversity.com:2181, rm01.itversity.com:2181 
- --topic kafkademodg
+kafka-topics --list \
+ --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+ --topic matymar7
 
-kafka-console-producer.sh \
+kafka-console-producer \
  --broker-list localhost:9092 \
- --topic kafkademodg
+ --topic matymar7
 
-###Ambari, check the broker-list and check the port number
+###Ambari,check the broker-list and check the port number
 
-kafka-console-producer.sh \
- --broker-list nn01.itversity.com:6667, nn02.itversity.com:6667, rm01.itversity.com:6667 \
- --topic kafkademodg
+kafka-console-producer \
+ --broker-list nn01.itversity.com:6667,nn02.itversity.com:6667,rm01.itversity.com:6667 \
+ --topic matymar7
 
 
 ##new version of consumer
-kafka-console-consumer.sh \
- --bootstrap-server nn01.itversity.com:6667, nn02.itversity.com:6667, rm01.itversity.com:6667 \
- --topic kafkademodg \
+kafka-console-consumer \
+ --bootstrap-server nn01.itversity.com:6667,nn02.itversity.com:6667,rm01.itversity.com:6667 \
+ --topic matymar7 \
  --from-beginning
 
 ##0.9 version of consumer
 
-kafka-console-consumer.sh \
- --zookeeper nn01.itversity.com:6667, nn02.itversity.com:6667, rm01.itversity.com:6667 \
- --topic kafkademodg \
+kafka-console-consumer \
+ --zookeeper nn01.itversity.com:6667,nn02.itversity.com:6667,rm01.itversity.com:6667 \
+ --topic matymar7 \
  --from-beginning
 
 
@@ -88,24 +88,51 @@ kafka-console-consumer.sh \
 
 
 
-####summary note
+####summary note 0.9 version
 
-kafka-topics.sh --create \
- --zookeeper nn01.itversity.com:2181, nn02.itversity.com:2181, rm01.itversity.com:2181 
- --replication-factor 1 
- --partitions 1 
- --topic kafkademodg
+kafka-topics --create \
+ --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+ --replication-factor 1 \
+ --partitions 1 \
+ --topic matymar7
 
-kafka-topics.sh --list \
- --zookeeper nn01.itversity.com:2181, nn02.itversity.com:2181, rm01.itversity.com:2181 
- --topic kafkademodg
+kafka-topics --list \
+ --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+ --topic matymar7
 
-kafka-console-producer.sh \
- --broker-list nn01.itversity.com:6667, nn02.itversity.com:6667, rm01.itversity.com:6667 \
- --topic kafkademodg
+kafka-console-producer \
+ --broker-list nn01.itversity.com:6667,nn02.itversity.com:6667,rm01.itversity.com:6667 \
+ --topic matymar7
 
 ##0.9 version of consumer
-kafka-console-consumer.sh \
- --zookeeper nn01.itversity.com:6667, nn02.itversity.com:6667, rm01.itversity.com:6667 \
- --topic kafkademodg \
+kafka-console-consumer \
+ --zookeeper nn01.itversity.com:6667,nn02.itversity.com:6667,rm01.itversity.com:6667 \
+ --topic matymar7 \
+ --from-beginning
+
+
+
+
+
+
+####summary note 2.0 version
+
+kafka-topics --create \
+ --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+ --replication-factor 1 \
+ --partitions 1 \
+ --topic matymar7
+
+kafka-topics --list \
+ --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+ --topic matymar7
+
+kafka-console-producer \
+ --broker-list nn01.itversity.com:6667,nn02.itversity.com:6667,rm01.itversity.com:6667 \
+ --topic matymar7
+
+##0.9 version of consumer
+kafka-console-consumer \
+ --bootstrap-server nn01.itversity.com:6667,nn02.itversity.com:6667,rm01.itversity.com:6667 \
+ --topic matymar7 \
  --from-beginning
