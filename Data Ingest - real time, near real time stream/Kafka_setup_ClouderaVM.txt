@@ -1,0 +1,51 @@
+cd /etc/yum.repos.d
+sudo wget http://archive.cloudera.com/kafka/redhat/6/x86_64/kafka/
+sudo yum clean all
+sudo yum install kafka
+sudo yum install kafka-server
+sudo service kafka-server start
+--------------------------
+sudo jps
+---------------------------
+Start zookeeper (if not already running)
+bin/zookeeper-server-start.sh config/zookeeper.properties
+bin/kafka-server-start.sh config/server.properties
+
+cd /usr/lib/kafka/
+
+Create topic
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic xmark2
+
+
+List topics
+bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+Start producer
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic xmark2
+
+Start comsumer
+bin/kafka-console-consumer.sh --zookeeper localhost:2181 -topic xmark2 --from-beginning
+
+
+sudo jps
+---------------------------
+5332 QuorumPeerMain
+28455 Kafka
+
+6365 ResourceManager
+87026951 ThriftServer
+6064 NodeManager
+86567141 RunJar
+7328 RunJar
+5934 JobHistoryServer
+7754 HistoryServer
+8622 Bootstrap
+7721 Bootstrap
+5876 Bootstrap
+29097 Jps
+8407 Bootstrap
+5411 DataNode
+6791 RESTServer
+5518 JournalNode
+5748 SecondaryNameNode
+5610 NameNode
