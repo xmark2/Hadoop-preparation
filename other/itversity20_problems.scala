@@ -212,3 +212,126 @@ group by c.customer_fname,c.customer_lname"""})
 
 
 result.map(rec=>rec.mkString("\t")).saveAsTextFile("/user/cloudera/itversity/problem6/solution")
+
+
+========
+problem7
+========
+
+var orders = sc.textFile("public/retail_db/orders")
+var order_items = sc.textFile("public/retail_db/order_items")
+var products = sc.textFile("public/retail_db/products")
+
+
+var ordersDF = orders.
+map(rec=>rec.split(",")).
+map(rec=>(rec(0),rec(1),rec(2),rec(3))).
+toDF("order_id","order_date","order_customer_id","order_status")
+
+
+var order_itemsDF = order_items.
+map(rec=>rec.split(",")).
+map(rec=>(rec(0),rec(1),rec(2),rec(3),rec(4),rec(5))).
+toDF("order_item_id","order_item_order_id","order_item_product_id","order_item_quantity","order_item_subtotal","order_item_product_price")
+
+
+var productsDF = products.
+map(rec=>rec.split(",")).
+map(rec=>(rec(0),rec(1),rec(2),rec(3),rec(4),rec(5))).
+toDF("product_id","product_category_id","product_name","product_description","product_price","product_image")
+
+
+ordersDF.registerTempTable("orders")
+order_itemsDF.registerTempTable("order_items")
+productsDF.registerTempTable("products")
+
+
+var result = sqlContext.sql({"""
+select o.order_date 
+,SUM(oi.order_item_subtotal) as order_revenue
+,p.product_name
+,p.product_category_id
+from orders o 
+inner join order_items oi 
+on o.order_id=oi.order_item_order_id
+inner join products p 
+on oi.order_item_product_id=p.product_id
+where order_status in ('COMPLETE','CLOSED')
+and cast(o.order_date as date)='2013-07-29'
+group by o.order_date, p.product_name ,p.product_category_id
+order by SUM(oi.order_item_subtotal) desc"""})
+
+
+// .show()
+
+result.map(rec=>rec.mkString(":")).saveAsTextFile("/user/cloudera/itversity/problem7/solution")
+
+
+
+========
+problem8
+========
+
+
+var orders = sc.textFile("public/retail_db/orders")
+
+var ordersDF = orders.
+map(rec=>rec.split(",")).
+map(rec=>(rec(0),rec(1),rec(2),rec(3))).
+toDF("order_id","order_date","order_customer_id","order_status")
+
+
+ordersDF.registerTempTable("orders")
+
+var result = sqlContext.sql({"""
+select order_id, 
+order_date, 
+order_customer_id, 
+order_status
+from orders
+where order_status='PENDING_PAYMENT'
+"""})
+
+
+result.write.orc("/user/cloudera/itversity/problem8/solution")
+
+
+
+========
+problem9
+========
+
+
+var h1b_data = sc.textFile("public/h1b/h1b_data")
+
+
+var header = h1b_data.first
+
+var result = h1b_data.filter(rec=>rec!=header)
+
+// result.take(10).foreach(println)
+
+result.saveAsTextFile("/user/cloudera/itversity/problem9/solution",classOf[org.apache.hadoop.io.compress.SnappyCodec])
+
+
+=========
+problem10
+=========
+
+
+var h1b_data = sc.textFile("public/h1b/h1b_data")
+
+
+var header = h1b_data.first
+
+var data = h1b_data.filter(rec=>rec!=header)
+
+var dataDF = data.map(rec=>rec.split("\0")).map(rec=>rec(7)).toDF("YEAR")
+
+dataDF.registerTempTable("data")
+
+var result = sqlContext.sql("select YEAR,count(1) as NUMBER_OF_LCAS from data where YEAR!='NA' group by YEAR")
+
+// .show()
+
+result.map(rec=>rec.mkString("\0")).repartition(1).saveAsTextFile("/user/cloudera/itversity/problem10/solution")
