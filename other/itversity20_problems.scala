@@ -335,3 +335,142 @@ var result = sqlContext.sql("select YEAR,count(1) as NUMBER_OF_LCAS from data wh
 // .show()
 
 result.map(rec=>rec.mkString("\0")).repartition(1).saveAsTextFile("/user/cloudera/itversity/problem10/solution")
+
+
+=========
+problem11
+=========
+
+var h1b_data=sc.textFile("public/h1b/h1b_data")
+
+var header = h1b_data.first
+
+var data = data.filter(rec=>rec!=header)
+
+var dataDF = data.map(rec=>rec.split("\0")).map(rec=>(rec(1),rec(7))).toDF("status","year")
+
+dataDF.registerTempTable("data")
+
+var result = sqlContext.sql({"""
+select 
+year,
+status, 
+count(1) as count 
+from data 
+where year=2016 
+group by year,status"""})
+
+result.toJSON.repartition(1).saveAsTextFile("/user/cloudera/itversity/problem11/solution")
+
+
+=========
+problem12
+=========
+
+
+var h1b_data=sc.textFile("public/h1b/h1b_data")
+
+var header = h1b_data.first
+
+var data = data.filter(rec=>rec!=header)
+
+var dataDF = data.map(rec=>rec.split("\0")).map(rec=>(rec(1),rec(2),rec(7))).toDF("status","employer_name","year")
+
+dataDF.registerTempTable("data")
+
+var result = sqlContext.sql({"""
+select 
+employer_name,
+count(1) as lca_count 
+from data 
+where year=2016 and status in ('WITHDRAWN','CERTIFIED-WITHDRAWN','DENIED')
+group by employer_name
+order by count(1) desc
+limit 5"""})
+
+result.write.parquet("/user/cloudera/itversity/problem12/solution")
+
+
+
+
+=========
+problem13
+=========
+
+
+var h1b_data=sc.textFile("public/h1b/h1b_data_noheader")
+
+var dataDF = data.
+map(rec=>rec.split("\0")).
+map(rec=>(rec(0),rec(1),rec(2),rec(3),rec(4),rec(5),rec(6),rec(7),rec(8),rec(9),rec(10))).
+toDF("ID","CASE_STATUS","EMPLOYER_NAME","SOC_NAME","JOB_TITLE","FULL_TIME_POSITION","PREVAILING_WAGE","YEAR","WORKSITE","LONGITUDE","LATITUDE")
+
+
+dataDF.registerTempTable("data")
+
+sqlContext.sql("create database if not exists xmark2")
+
+sqlContext.sql({"""
+create table if not exists xmark2.h1b_data
+as
+select 
+cast(ID as int) as ID, CASE_STATUS, 
+EMPLOYER_NAME, SOC_NAME, 
+JOB_TITLE, FULL_TIME_POSITION, 
+cast(PREVAILING_WAGE as double) as PREVAILING_WAGE, cast(YEAR as int) as YEAR, 
+WORKSITE, 
+LONGITUDE, LATITUDE
+from data 
+where PREVAILING_WAGE!='NA' or YEAR!='NA'"""})
+
+
+
+=========
+problem14
+=========
+
+mysql -u root -p 
+
+create database if not exists h1b_export;
+
+
+CREATE TABLE h1b_data_xmark2 (
+ID                 INT, 
+CASE_STATUS        VARCHAR(50), 
+EMPLOYER_NAME      VARCHAR(100), 
+SOC_NAME           VARCHAR(100), 
+JOB_TITLE          VARCHAR(100), 
+FULL_TIME_POSITION VARCHAR(50), 
+PREVAILING_WAGE    FLOAT, 
+YEAR               INT, 
+WORKSITE           VARCHAR(50), 
+LONGITUDE          VARCHAR(50), 
+LATITUDE           VARCHAR(50));
+
+
+sqoop export \
+--connect "jdbc:mysql://quickstart.cloudera:3306/h1b_export" \
+--username "root" \
+--password "cloudera" \
+--table "h1b_data_xmark2" \
+--export-dir "public/h1b/h1b_data_to_be_exported" \
+--input-fields-terminated-by "\001" \
+--input-null-non-string "NA" \
+--input-null-string "NA"
+
+
+
+=========
+problem15
+=========
+
+
+sqoop import \
+--connect "jdbc:mysql://quickstart.cloudera:3306/h1b_export" \
+--username "root" \
+--password "cloudera" \
+--table "h1b_data_xmark2" \
+--where "CASE_STATUS='CERTIFIED'" \
+--target-dir "/user/cloudera/itversity/problem15/solution" \
+--as-avrodatafile \
+-m 1
