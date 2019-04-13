@@ -474,3 +474,225 @@ sqoop import \
 --target-dir "/user/cloudera/itversity/problem15/solution" \
 --as-avrodatafile \
 -m 1
+
+
+
+=========
+problem16
+=========
+
+
+var nyseData = sc.textFile("public/nyse")
+
+var nyseDF = nyseData.
+map(rec=>rec.split(",")).
+map(rec=>(rec(0),rec(1),rec(2),rec(3),rec(4),rec(5),rec(6))).
+toDF("stockticker","transactiondate","openprice","highprice","lowprice","closeprice","volume")
+
+// nyseData.first
+
+nyseDF.registerTempTable("nyse")
+
+var result = sqlContext.sql({"""
+select
+stockticker, 
+transactiondate, 
+openprice, 
+highprice, 
+lowprice, 
+closeprice, 
+cast(volume as int) as volume
+from nyse
+order by transactiondate, cast(volume as int) desc
+"""})
+
+// result.take(100).foreach(println)
+
+result.map(rec=>rec.mkString(":")).repartition(3).saveAsTextFile("/user/cloudera/itversity/problem16/solution")
+
+
+=========
+problem17
+=========
+
+import com.databricks.spark.avro._;
+
+var nyseData = sc.textFile("public/nyse")
+
+var nyseDF = nyseData.
+map(rec=>rec.split(",")).
+map(rec=>(rec(0),rec(1),rec(2),rec(3),rec(4),rec(5),rec(6))).
+toDF("stockticker","transactiondate","openprice","highprice","lowprice","closeprice","volume")
+
+nyseDF.registerTempTable("nyse")
+
+
+var nyse_symbolsData = sc.textFile("public/nyse_symbols")
+
+var nyse_symbolsHeader = nyse_symbolsData.first
+
+var nyse_symbolsDF = nyse_symbolsData.
+filter(rec=>rec!=nyse_symbolsHeader).
+map(rec=>rec.split("\t")).
+map(rec=>(rec(0),rec(1))).
+toDF("symbol","description")
+
+
+nyse_symbolsDF.take(10).foreach(println)
+
+
+nyse_symbolsDF.registerTempTable("symbolsDF")
+
+
+
+var result = sqlContext.sql({"""
+select distinct a.stockticker
+from nyse a 
+left outer join symbolsDF b 
+on a.stockticker=b.symbol and b.description is null"""})
+
+
+result.write.avro("/user/cloudera/itversity/problem17/solution")
+
+
+
+
+=========
+problem18
+=========
+
+
+
+var nyseData = sc.textFile("public/nyse")
+
+var nyseDF = nyseData.
+map(rec=>rec.split(",")).
+map(rec=>(rec(0),rec(1),rec(2),rec(3),rec(4),rec(5),rec(6))).
+toDF("stockticker","transactiondate","openprice","highprice","lowprice","closeprice","volume")
+
+nyseDF.registerTempTable("nyse")
+
+
+var nyse_symbolsData = sc.textFile("public/nyse_symbols")
+
+var nyse_symbolsHeader = nyse_symbolsData.first
+
+var nyse_symbolsDF = nyse_symbolsData.
+filter(rec=>rec!=nyse_symbolsHeader).
+map(rec=>rec.split("\t")).
+map(rec=>(rec(0),rec(1))).
+toDF("symbol","description")
+
+
+nyse_symbolsDF.take(10).foreach(println)
+
+
+nyse_symbolsDF.registerTempTable("symbolsDF")
+
+
+
+var result = sqlContext.sql({"""
+select 
+a.stockticker,
+nvl(b.description,'') stockname,
+a.transactiondate,
+a.openprice,
+a.highprice,
+a.lowprice,
+a.closeprice,
+a.volume
+from nyse a 
+left outer join symbolsDF b 
+on a.stockticker=b.symbol """})
+
+
+
+
+result.take(10).foreach(println)
+
+result.map(rec=>rec.mkString(",")).saveAsTextFile("/user/cloudera/itversity/problem18/solution")
+
+
+
+=========
+problem19
+=========
+
+
+var h1b_data = sc.textFile("public/h1b/h1b_data_noheader")
+
+
+h1b_data.take(10).foreach(println)
+
+var h1b_DF = h1b_data.
+map(rec=>rec.split("\0")).
+map(rec=>(rec(0),rec(1),rec(2),rec(3),rec(4),rec(5),rec(6),rec(7),rec(8),rec(9),rec(10))).
+toDF("ID","CASE_STATUS","EMPLOYER_NAME","SOC_NAME","JOB_TITLE","FULL_TIME_POSITION","PREVAILING_WAGE","YEAR","WORKSITE","LONGITUDE","LATITUDE")
+
+h1b_DF.registerTempTable("h1b")
+
+
+sqlContext.sql({"""
+select 
+YEAR as year, 
+count(distinct EMPLOYER_NAME) as lca_count
+from h1b
+where YEAR!='NA'
+group by YEAR"""}).show()
+
+
+result.map(rec=>rec.mkString(",")).saveAsTextFile("/user/cloudera/itversity/problem19/solution")
+
+
+
+=========
+problem20
+=========
+
+sqlContext.sql("create database if not exists problem20");
+
+sqlContext.sql({"""
+create table if not exists problem20.h1b_data
+as
+select 
+ID,
+CASE_STATUS,
+EMPLOYER_NAME,
+SOC_NAME,
+JOB_TITLE,
+FULL_TIME_POSITION,
+PREVAILING_WAGE,
+YEAR,
+WORKSITE,
+LONGITUDE,
+LATITUDE
+from h1b"""})
+
+
+sqoop export \
+--connect "jdbc:mysql://quickstart.cloudera:3306/h1b_export" \
+--username "root" \
+--password "cloudera" \
+--table "problem20" \
+--export-dir "/user/hive/warehouse/problem20.db/h1b_data/" \
+--input-fields-terminated-by "\001" \
+--input-null-non-string "NA" \
+--input-null-string "NA"
+
+
+sqoop eval \
+--connect "jdbc:mysql://quickstart.cloudera:3306/h1b_export" \
+--username "root" \
+--password "cloudera" \
+--query "select EMPLOYER_NAME employer_name, CASE_STATUS case_status, count(1) count from problem20 group by EMPLOYER_NAME, CASE_STATUS order by EMPLOYER_NAME, count(1) DESC"
+
+
+sqoop import \
+--connect "jdbc:mysql://quickstart.cloudera:3306/h1b_export" \
+--username "root" \
+--password "cloudera" \
+--query "select EMPLOYER_NAME employer_name, CASE_STATUS case_status, count(1) count from problem20 where \$CONDITIONS group by EMPLOYER_NAME, CASE_STATUS order by EMPLOYER_NAME, count DESC" \
+--target-dir "/user/cloudera/itversity/problem20/solution" \
+--fields-terminated-by "\t" \
+--as-textfile \
+-m 1
