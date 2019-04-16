@@ -1,0 +1,280 @@
+========================================================================
+### sqoop snappy compress
+====================================
+
+
+
+
+
+========================================================================
+### sqoop save as text
+### sqoop save as avro
+### sqoop save as parquet
+====================================
+
+
+
+
+
+========================================================================
+### sqoop import: handle numbers as null and string null in sqoop import
+====================================
+
+
+
+
+
+========================================================================
+### sqoop export: set delimiter from hive to mysql export 
+###	handle numbers as null and string null in sqoop export
+====================================
+
+
+
+
+========================================================================
+### sqoop export: myhivedb.db/myhtable using id,name desc fields
+====================================
+
+
+
+
+========================================================================
+### sqoop merge steps
+====================================
+
+
+
+
+
+========================================================================
+### sqoop job : create my_test_job and import
+====================================
+
+
+
+
+
+========================================================================
+### sqoop job : incremental import 3 main commands
+====================================
+
+
+
+
+========================================================================
+### sqoop : hive import to myhivedatabase and myhtable
+====================================
+
+
+
+
+
+========================================================================
+*
+### sqoop : hive import-all-table from mysql to myhivedatabase as textfile
+====================================
+
+
+
+
+========================================================================
+### sqoop export: update product_id and insert new records
+====================================
+
+
+
+
+
+
+
+
+
+========================================================================
+### Read text file from "/user/cloudera/folder/file.txt" to spark (variable dataFile)
+============================
+
+
+
+
+
+========================================================================
+### Read csv file from "/user/cloudera/folder/file.csv" to spark (variable dataFile)
+============================
+
+
+
+
+
+
+========================================================================
+*
+### Read/load products from local file system and convert into RDD /data/retail_db/products/part-00000
+============================
+
+
+
+
+========================================================================
+### Read avro file from "/user/cloudera/folder" to spark (variable dataFile)
+============================
+
+
+
+
+
+========================================================================
+*
+### Read sequence file from "/user/cloudera/folder" to spark (variable seqData)
+### save as orc to /user/cloudera/myorc
+============================
+
+
+
+
+
+
+====================================================================================
+### PARQUET compression
+### use gzip, snappy, uncompressed, lzo compression and save sqlResult rdd 
+### as parquet to /user/cloudera/folder
+## save as parquet and partition to 1
+============================
+
+
+
+
+
+
+====================================================================================
+### AVRO compression
+### use gzip, snappy, uncompressed, lzo compression and save DFResult rdd as avro to /user/cloudera/folder
+============================
+
+
+
+
+
+
+
+====================================================================================
+### JSON compression
+### read avro user/cloudera/myavro, set as dataFile variable
+### use gzip, uncompressed compression and save dataFile rdd as JSON to /user/cloudera/folder
+============================
+
+
+
+
+
+
+
+
+====================================================================================
+*
+### TAB delimited file compression
+### you have a the following rdd 
+###
+### 		dataFile.map(x=>x(0)+"\t"+x(1)+"\t"+x(2)+"\t"+x(3))
+###
+### use gzip, snappy compression and save the given rdd as text to /user/cloudera/folder
+### save as sequence using no compression 
+============================
+
+
+
+
+
+
+
+====================================================================================
+*
+### CSV file compression
+### you have a the following rdd 
+###
+### 		dataFile.map(x=>x(0)+","+x(1)+","+x(2)+","+x(3))
+###
+### use gzip compression and save the given rdd as csv to /user/cloudera/folder
+### save as sequence using no compression 
+============================
+
+
+
+
+
+
+
+====================================================================================
+*
+### create result table: order_date varchar(255), order_status varchar(255), total_orders int
+### create primary key using order_date and order_status
+============================
+
+
+
+
+
+
+
+====================================================================================
+### change permission on "/user/cloudera/products" folder such that owner has read,write and ### execute permissions, group has read and write permissions whereas others have just read 
+### and execute permissions
+============================
+
+
+
+
+
+====================================================================================
+*
+### create external table based on /user/hive/warehouse/retail_stage.db/orders
+### use this file for schema /user/hive/schemas/order/orders.avsc
+============================
+
+
+
+
+
+
+
+
+============================================================================================
+### start impala in terminal and use hive metadata
+==============================================
+
+
+
+
+
+
+
+============================================================================================
+*
+set partition mode
+
+create a table named orders_avro in hive stored as avro, the table should have same table definition as 
+	(order_id int,
+	order_date date)
+Additionally, this new table should be partitioned by the order_month i.e -> year-order_month.(example: 2014-01)
+
+Load data into orders_avro table from orders_sqoop table.
+==========================================================
+
+
+
+
+
+
+
+
+============================================================================================
+*
+### copy xml from hive to spark library to make sure the hive spark works well
+### spark: use data available on hive metastore
+### store mydb.mytable data in new metastore table, named as mydb.newtable
+==============================================
+
+
+
+
+
